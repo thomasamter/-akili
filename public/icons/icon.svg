@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="100" fill="#0A0A0A"/>
+
+  <!-- Gold gradient -->
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FDB913"/>
+      <stop offset="100%" style="stop-color:#E5A811"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Brain icon (simplified) -->
+  <g transform="translate(106, 106) scale(0.6)">
+    <path fill="url(#goldGrad)" d="M256 48C141.1 48 48 141.1 48 256s93.1 208 208 208 208-93.1 208-208S370.9 48 256 48zm0 374.4c-91.8 0-166.4-74.6-166.4-166.4S164.2 89.6 256 89.6s166.4 74.6 166.4 166.4-74.6 166.4-166.4 166.4z"/>
+    <path fill="url(#goldGrad)" d="M256 128c-70.7 0-128 57.3-128 128s57.3 128 128 128 128-57.3 128-128-57.3-128-128-128zm0 214.4c-47.7 0-86.4-38.7-86.4-86.4s38.7-86.4 86.4-86.4 86.4 38.7 86.4 86.4-38.7 86.4-86.4 86.4z"/>
+    <circle fill="url(#goldGrad)" cx="256" cy="256" r="48"/>
+  </g>
+
+  <!-- "A" letter for AKILI -->
+  <text x="256" y="340"
+        font-family="Inter, Arial, sans-serif"
+        font-size="180"
+        font-weight="800"
+        fill="url(#goldGrad)"
+        text-anchor="middle">A</text>
+</svg>

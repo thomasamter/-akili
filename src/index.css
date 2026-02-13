@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+/* AKILI - Pan-African Trivia Game */
+/* Brand: Gold (#FDB913) + Black (#0A0A0A) */
+
+@layer base {
+  :root {
+    --gold: #FDB913;
+    --black: #0A0A0A;
+    --pan-red: #EF4444;
+    --pan-green: #10B981;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #0A0A0A;
+    color: white;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  /* Glassmorphism Card */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+  }
+
+  /* Gold Gradient Text */
+  .text-gold-gradient {
+    background: linear-gradient(135deg, #FDB913 0%, #FFD700 50%, #FDB913 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Gold Glow Effect */
+  .gold-glow {
+    box-shadow: 0 0 30px rgba(253, 185, 19, 0.3);
+  }
+
+  /* Pan-African Gradient */
+  .pan-gradient {
+    background: linear-gradient(135deg, #EF4444 0%, #FDB913 50%, #10B981 100%);
+  }
+
+  /* Button Styles */
+  .btn-gold {
+    background: linear-gradient(135deg, #FDB913 0%, #E5A811 100%);
+    color: #0A0A0A;
+    font-weight: 600;
+    padding: 12px 24px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .btn-gold:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(253, 185, 19, 0.4);
+  }
+
+  /* Animated Background Pattern */
+  .pattern-bg {
+    background-image:
+      radial-gradient(circle at 25% 25%, rgba(253, 185, 19, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, rgba(253, 185, 19, 0.03) 0%, transparent 50%);
+  }
+}
+
+@layer utilities {
+  .animate-pulse-gold {
+    animation: pulse-gold 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse-gold {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+}
