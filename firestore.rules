@@ -1,0 +1,164 @@
+rules_version = '2';
+
+// AKILI Firestore Security Rules
+// Prevents unauthorized database access and manipulation
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function isValidScore(score) {
+      return score is int && score >= 0 && score <= 10000;
+    }
+
+    function isValidXP(xp) {
+      return xp is int && xp >= 0 && xp <= 100000;
+    }
+
+    function isValidCoins(coins) {
+      return coins is int && coins >= 0 && coins <= 1000000;
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function isValidTimestamp(ts) {
+      return ts is timestamp && ts <= request.time;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      // Users can read their own profile
+      allow read: if isOwner(userId);
+
+      // Users can create their own profile
+      allow create: if isOwner(userId)
+        && hasRequiredFields(['username', 'createdAt'])
+        && request.resource.data.username is string
+        && request.resource.data.username.size() >= 3
+        && request.resource.data.username.size() <= 20;
+
+      // Users can update their own profile (limited fields)
+      allow update: if isOwner(userId)
+        && (!request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['createdAt', 'isPremium', 'premiumExpiry', 'coins', 'xp']));
+
+      // Admins only can delete
+      allow delete: if false;
+    }
+
+    // Player progress (scores, stats, achievements)
+    match /progress/{userId} {
+      allow read: if isOwner(userId);
+
+      allow create: if isOwner(userId)
+        && isValidScore(request.resource.data.get('highScore', 0))
+        && isValidXP(request.resource.data.get('xp', 0))
+        && isValidCoins(request.resource.data.get('coins', 100));
+
+      // Only allow incremental score/XP updates (prevent cheating)
+      allow update: if isOwner(userId)
+        && isValidScore(request.resource.data.highScore)
+        && isValidXP(request.resource.data.xp)
+        && isValidCoins(request.resource.data.coins)
+        // Prevent massive score jumps (max 1000 per update)
+        && (request.resource.data.highScore - resource.data.highScore) <= 1000
+        // Prevent massive XP jumps (max 500 per update)
+        && (request.resource.data.xp - resource.data.xp) <= 500
+        // Prevent massive coin jumps (max 1000 per update, unless purchase)
+        && (request.resource.data.coins - resource.data.coins) <= 1000;
+
+      allow delete: if false;
+    }
+
+    // Game sessions (for anti-cheat validation)
+    match /sessions/{sessionId} {
+      allow read: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
+
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid
+        && hasRequiredFields(['userId', 'startedAt', 'category'])
+        && isValidTimestamp(request.resource.data.startedAt);
+
+      // Sessions can only be updated to add answers/end time
+      allow update: if isAuthenticated()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.startedAt == resource.data.startedAt;
+
+      allow delete: if false;
+    }
+
+    // Leaderboards (read-only for users, written by server)
+    match /leaderboards/{leagueId} {
+      allow read: if isAuthenticated();
+      // Only Cloud Functions can write to leaderboards
+      allow write: if false;
+    }
+
+    // Weekly league standings
+    match /leagues/{weekId}/standings/{rankId} {
+      allow read: if isAuthenticated();
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
+    // Premium purchases (written by payment webhooks only)
+    match /purchases/{purchaseId} {
+      allow read: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
+      // Only Cloud Functions / webhooks can write
+      allow write: if false;
+    }
+
+    // Referrals
+    match /referrals/{referralId} {
+      allow read: if isAuthenticated()
+        && (resource.data.referrerId == request.auth.uid
+            || resource.data.referredId == request.auth.uid);
+
+      allow create: if isAuthenticated()
+        && request.resource.data.referredId == request.auth.uid
+        && request.resource.data.referrerId != request.auth.uid
+        && hasRequiredFields(['referrerId', 'referredId', 'createdAt']);
+
+      allow update, delete: if false;
+    }
+
+    // Ad watches (rate limiting)
+    match /adWatches/{watchId} {
+      allow read: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
+
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid
+        && hasRequiredFields(['userId', 'rewardType', 'watchedAt'])
+        && isValidTimestamp(request.resource.data.watchedAt);
+
+      allow update, delete: if false;
+    }
+
+    // Reported suspicious activity (write-only)
+    match /suspiciousActivity/{reportId} {
+      allow read: if false;
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Default deny all other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
