@@ -44,9 +44,16 @@ const ProverbScreen = ({ onComplete }) => {
       setProgress((prev) => Math.min(prev + 2.5, 100))
     }, 100)
 
+    // Listen for any key press to dismiss
+    const handleKeyPress = (e) => {
+      handleDismiss()
+    }
+    window.addEventListener('keydown', handleKeyPress)
+
     return () => {
       clearTimeout(timer)
       clearInterval(progressInterval)
+      window.removeEventListener('keydown', handleKeyPress)
     }
   }, [])
 
@@ -67,7 +74,8 @@ const ProverbScreen = ({ onComplete }) => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[#0A0A0A] p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#0A0A0A] p-4 cursor-pointer"
+          onClick={handleDismiss}
         >
           {/* Animated Background */}
           <div className="absolute inset-0 overflow-hidden">
@@ -188,17 +196,15 @@ const ProverbScreen = ({ onComplete }) => {
               </div>
             </div>
 
-            {/* Skip Button */}
-            <motion.button
+            {/* Skip Hint */}
+            <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.5 }}
-              onClick={handleDismiss}
-              className="absolute -bottom-16 right-0 flex items-center gap-2 text-gray-500 hover:text-gold-400 transition-colors text-sm group"
+              className="absolute -bottom-12 left-0 right-0 text-center text-gray-500 text-sm"
             >
-              <span>Skip</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </motion.button>
+              Tap anywhere or press any key to continue
+            </motion.p>
           </motion.div>
 
           {/* Bottom decoration - Pan-African colors */}
