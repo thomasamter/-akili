@@ -1,5 +1,7 @@
+import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
 import { useGameStore, usePlayerStore } from './lib/store'
+import { getTodayHeadline } from './data/dailyContent'
 import GamePage from './pages/GamePage'
 import AchievementsPage from './pages/AchievementsPage'
 import LoginPage from './pages/LoginPage'
@@ -12,6 +14,11 @@ function HomePage() {
   const navigate = useNavigate()
   const { streak, highScore } = useGameStore()
   const { coins, xp, lives, isPremium } = usePlayerStore()
+  const [headline, setHeadline] = useState(null)
+
+  useEffect(() => {
+    setHeadline(getTodayHeadline())
+  }, [])
 
   const handlePlay = (category) => {
     if (!isPremium && lives <= 0) {
@@ -50,6 +57,16 @@ function HomePage() {
           <h1 className="text-3xl font-bold text-white mb-2">Welcome to AKILI! 👋</h1>
           <p className="text-gray-400">Test your African knowledge</p>
         </div>
+
+        {/* Today's Headline */}
+        {headline && (
+          <div className="glass-card p-4 border-l-4 border-red-500">
+            <p className="text-xs text-red-400 font-medium uppercase mb-1">📰 Today's News</p>
+            <h3 className="text-white font-semibold mb-1">{headline.headline}</h3>
+            <p className="text-gray-400 text-sm">{headline.summary}</p>
+            <p className="text-gray-500 text-xs mt-2">{headline.country}</p>
+          </div>
+        )}
 
         {/* Play Button */}
         <button

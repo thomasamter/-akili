@@ -53,12 +53,6 @@ export const getTodayHeadline = () => {
   return headlines[dayOfYear % headlines.length]
 }
 
-// Get today's headline (can be extended to fetch from API)
-export const getTodayHeadline = () => {
-  // In production, this could fetch from NewsAPI or a custom backend
-  return dailyHeadline
-}
-
 // Weekly Current Affairs Quiz
 // Each week features 10 questions about recent African news
 export const weeklyQuizzes = [
