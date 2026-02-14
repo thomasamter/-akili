@@ -1,21 +1,56 @@
 // AKILI Daily Content - Headlines & Weekly Quizzes
 // Updated regularly with African news and current affairs
 
-// Daily Headline of the Day
-// This can be updated daily or fetched from an API
-export const dailyHeadline = {
-  date: "2024-02-12",
-  headline: "African Union Summit 2024 Focuses on Continental Integration",
-  summary: "Leaders from 54 African nations gather in Addis Ababa to discuss economic cooperation, peace initiatives, and the implementation of AfCFTA.",
-  source: "African Union",
-  country: "🇪🇹 Ethiopia",
-  category: "Politics",
-  relatedQuestion: {
-    question: "Where is the African Union headquarters located?",
-    options: ["Cairo, Egypt", "Addis Ababa, Ethiopia", "Nairobi, Kenya", "Pretoria, South Africa"],
-    correctAnswer: 1,
-    explanation: "The African Union headquarters is in Addis Ababa, Ethiopia, established in 2002."
-  }
+// Rotating headlines - shows different ones based on day
+const headlines = [
+  {
+    headline: "AfCFTA Trade Volume Hits Record $1.2 Trillion",
+    summary: "The African Continental Free Trade Area reaches milestone as intra-African trade surges, creating millions of jobs across the continent.",
+    country: "🌍 Africa",
+    category: "Economy",
+  },
+  {
+    headline: "Kenya Launches Africa's Largest Wind Farm",
+    summary: "Lake Turkana Wind Power expansion makes Kenya a renewable energy leader, powering 2 million homes with clean energy.",
+    country: "🇰🇪 Kenya",
+    category: "Technology",
+  },
+  {
+    headline: "Nigeria's Tech Unicorns Top $50 Billion Valuation",
+    summary: "Lagos emerges as Africa's undisputed tech capital with record startup investments and innovation hubs.",
+    country: "🇳🇬 Nigeria",
+    category: "Technology",
+  },
+  {
+    headline: "Rwanda Hosts Africa AI Summit 2026",
+    summary: "African leaders and tech giants gather in Kigali to discuss AI ethics, digital transformation, and homegrown innovation.",
+    country: "🇷🇼 Rwanda",
+    category: "Technology",
+  },
+  {
+    headline: "Ethiopia's Grand Renaissance Dam Reaches Full Capacity",
+    summary: "The largest hydroelectric project in Africa is now fully operational, providing electricity to 60 million people.",
+    country: "🇪🇹 Ethiopia",
+    category: "Infrastructure",
+  },
+  {
+    headline: "South Africa Wins Bid to Host 2034 FIFA World Cup",
+    summary: "Historic decision makes South Africa the first African nation to host a second World Cup after 2010 success.",
+    country: "🇿🇦 South Africa",
+    category: "Sports",
+  },
+  {
+    headline: "Ghana Becomes Africa's Newest Oil Powerhouse",
+    summary: "New offshore discoveries double Ghana's oil reserves, positioning it among Africa's top energy producers.",
+    country: "🇬🇭 Ghana",
+    category: "Energy",
+  },
+]
+
+// Get today's headline (rotates daily)
+export const getTodayHeadline = () => {
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24))
+  return headlines[dayOfYear % headlines.length]
 }
 
 // Get today's headline (can be extended to fetch from API)
@@ -113,7 +148,7 @@ export const africanNewsSources = [
 ]
 
 export default {
-  dailyHeadline,
+  headlines,
   weeklyQuizzes,
   dailyChallengeSchedule,
   getTodayHeadline,
