@@ -48,18 +48,24 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
 
-    <!-- Register Service Worker -->
+    <!-- Unregister Service Worker (fixing cache issues) -->
     <script>
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then((registration) => {
-              console.log('AKILI SW registered:', registration.scope)
-            })
-            .catch((error) => {
-              console.log('AKILI SW registration failed:', error)
-            })
-        })
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+            console.log('Service worker unregistered');
+          }
+        });
+        // Also clear caches
+        if ('caches' in window) {
+          caches.keys().then(function(names) {
+            for (let name of names) {
+              caches.delete(name);
+              console.log('Cache deleted:', name);
+            }
+          });
+        }
       }
     </script>
   </body>

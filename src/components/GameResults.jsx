@@ -1,9 +1,75 @@
 // AKILI Game Results Component
 // Shows quiz completion summary and stats
 
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../lib/store'
+import { useMemo } from 'react'
+
+// Confetti particle component
+const ConfettiParticle = ({ index, color, delay }) => {
+  const randomX = useMemo(() => Math.random() * 100, [])
+  const randomRotation = useMemo(() => Math.random() * 720 - 360, [])
+  const randomDuration = useMemo(() => 2 + Math.random() * 2, [])
+  const size = useMemo(() => 8 + Math.random() * 8, [])
+
+  return (
+    <motion.div
+      initial={{
+        x: '50vw',
+        y: '-10vh',
+        rotate: 0,
+        opacity: 1
+      }}
+      animate={{
+        x: `${randomX}vw`,
+        y: '110vh',
+        rotate: randomRotation,
+        opacity: [1, 1, 0]
+      }}
+      transition={{
+        duration: randomDuration,
+        delay: delay,
+        ease: 'easeOut'
+      }}
+      style={{
+        position: 'fixed',
+        width: size,
+        height: size,
+        backgroundColor: color,
+        borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+        zIndex: 100,
+        pointerEvents: 'none',
+      }}
+    />
+  )
+}
+
+// Celebration confetti burst
+const CelebrationConfetti = ({ show }) => {
+  const colors = ['#FDB913', '#EF4444', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899', '#FFD700']
+  const particles = useMemo(() =>
+    Array.from({ length: 50 }, (_, i) => ({
+      id: i,
+      color: colors[i % colors.length],
+      delay: Math.random() * 0.5
+    })), [])
+
+  if (!show) return null
+
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-50">
+      {particles.map(particle => (
+        <ConfettiParticle
+          key={particle.id}
+          index={particle.id}
+          color={particle.color}
+          delay={particle.delay}
+        />
+      ))}
+    </div>
+  )
+}
 
 const GameResults = ({
   score,
@@ -48,20 +114,72 @@ const GameResults = ({
     { label: 'Time', value: formatTime(timeTaken), icon: '⏱️' },
   ]
 
+  // Show celebration for good scores (40%+)
+  const showCelebration = percentage >= 40
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen bg-akili-black flex flex-col items-center justify-center p-6"
+      className="min-h-screen bg-akili-black flex flex-col items-center justify-center p-6 overflow-hidden"
     >
+      {/* Celebration Confetti */}
+      <CelebrationConfetti show={showCelebration} />
+
+      {/* Burst effect behind emoji */}
+      {showCelebration && (
+        <motion.div
+          initial={{ scale: 0, opacity: 0.8 }}
+          animate={{ scale: 3, opacity: 0 }}
+          transition={{ duration: 1, delay: 0.1 }}
+          className="absolute w-32 h-32 rounded-full"
+          style={{
+            background: 'radial-gradient(circle, rgba(253,185,19,0.4) 0%, transparent 70%)',
+          }}
+        />
+      )}
+
       {/* Performance Emoji */}
       <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ type: 'spring', delay: 0.2 }}
-        className="text-7xl mb-4"
+        initial={{ scale: 0, rotate: -180 }}
+        animate={{
+          scale: [0, 1.3, 1],
+          rotate: 0
+        }}
+        transition={{
+          type: 'spring',
+          delay: 0.2,
+          duration: 0.8,
+          times: [0, 0.6, 1]
+        }}
+        className="text-5xl mb-2 relative z-10"
       >
         {performance.emoji}
+        {/* Sparkle effects for perfect score */}
+        {percentage === 100 && (
+          <>
+            <motion.span
+              className="absolute -top-2 -right-2 text-2xl"
+              animate={{
+                scale: [1, 1.2, 1],
+                opacity: [1, 0.5, 1]
+              }}
+              transition={{ duration: 1, repeat: Infinity }}
+            >
+              ✨
+            </motion.span>
+            <motion.span
+              className="absolute -bottom-1 -left-2 text-xl"
+              animate={{
+                scale: [1, 1.3, 1],
+                opacity: [0.5, 1, 0.5]
+              }}
+              transition={{ duration: 1.2, repeat: Infinity, delay: 0.3 }}
+            >
+              ⭐
+            </motion.span>
+          </>
+        )}
       </motion.div>
 
       {/* Performance Message */}
@@ -69,7 +187,7 @@ const GameResults = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className={`text-3xl md:text-4xl font-bold ${performance.color} mb-2`}
+        className={`text-2xl md:text-3xl font-bold ${performance.color} mb-1`}
       >
         {performance.message}
       </motion.h1>
@@ -92,7 +210,7 @@ const GameResults = ({
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.45, type: 'spring' }}
-          className="flex items-center gap-2 bg-akili-gold/20 rounded-full px-4 py-2 mb-8"
+          className="flex items-center gap-2 bg-akili-gold/20 rounded-full px-4 py-2 mb-4"
         >
           <span className="text-xl">🪙</span>
           <span className="text-akili-gold font-bold">+{coinsEarned} coins earned!</span>
@@ -104,32 +222,32 @@ const GameResults = ({
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: 'spring', delay: 0.5 }}
-        className="relative w-40 h-40 mb-8"
+        className="relative w-32 h-32 mb-3"
       >
         {/* Background circle */}
         <svg className="w-full h-full transform -rotate-90">
           <circle
-            cx="80"
-            cy="80"
-            r="70"
+            cx="64"
+            cy="64"
+            r="56"
             fill="none"
             stroke="rgba(255, 255, 255, 0.1)"
-            strokeWidth="8"
+            strokeWidth="6"
           />
           <motion.circle
-            cx="80"
-            cy="80"
-            r="70"
+            cx="64"
+            cy="64"
+            r="56"
             fill="none"
             stroke="#FDB913"
-            strokeWidth="8"
+            strokeWidth="6"
             strokeLinecap="round"
-            strokeDasharray={2 * Math.PI * 70}
-            initial={{ strokeDashoffset: 2 * Math.PI * 70 }}
+            strokeDasharray={2 * Math.PI * 56}
+            initial={{ strokeDashoffset: 2 * Math.PI * 56 }}
             animate={{
-              strokeDashoffset: 2 * Math.PI * 70 * (1 - percentage / 100)
+              strokeDashoffset: 2 * Math.PI * 56 * (1 - percentage / 100)
             }}
-            transition={{ duration: 1, delay: 0.6 }}
+            transition={{ duration: 1, delay: 0.3 }}
           />
         </svg>
 
@@ -138,13 +256,39 @@ const GameResults = ({
           <motion.span
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            className="text-4xl font-bold text-white"
+            transition={{ delay: 0.4 }}
+            className="text-3xl font-bold text-white"
           >
             {percentage}%
           </motion.span>
-          <span className="text-white/40 text-sm">Score</span>
+          <span className="text-white/40 text-xs">Score</span>
         </div>
+      </motion.div>
+
+      {/* Play Again Button - Prominently placed under score */}
+      <motion.div
+        initial={{ opacity: 1, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0, duration: 0.3 }}
+        className="flex flex-col gap-2 w-full max-w-sm mb-6"
+      >
+        <button
+          onClick={onPlayAgain}
+          className="w-full py-4 bg-akili-gold text-akili-black font-bold text-lg rounded-xl hover:bg-akili-gold/90 transition-colors"
+          style={{
+            border: '4px solid #FFD700',
+            boxShadow: '0 0 20px rgba(253, 185, 19, 0.6)'
+          }}
+        >
+          ▶ Play Again
+        </button>
+
+        <button
+          onClick={onGoHome || (() => navigate('/'))}
+          className="w-full py-3 bg-white/10 text-white font-medium rounded-xl hover:bg-white/20 transition-colors"
+        >
+          Back to Home
+        </button>
       </motion.div>
 
       {/* Stats Grid */}
@@ -209,28 +353,6 @@ const GameResults = ({
           </div>
         </motion.div>
       )}
-
-      {/* Action Buttons */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.1 }}
-        className="flex flex-col gap-3 w-full max-w-sm"
-      >
-        <button
-          onClick={onPlayAgain}
-          className="w-full py-4 bg-akili-gold text-akili-black font-bold rounded-xl hover:bg-akili-gold/90 transition-colors"
-        >
-          Play Again
-        </button>
-
-        <button
-          onClick={onGoHome || (() => navigate('/'))}
-          className="w-full py-4 bg-white/10 text-white font-medium rounded-xl hover:bg-white/20 transition-colors"
-        >
-          Back to Home
-        </button>
-      </motion.div>
 
       {/* Share Button */}
       <motion.button

@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore, usePlayerStore } from '../lib/store'
-import { questions, categories, getQuestionsByCategory, getRandomQuestions } from '../data/questions'
+import { questions, categories, getQuestionsByCategory, getRandomQuestions, getRandomFromCategory } from '../data/questions'
 import { getCurrentWeekQuiz } from '../data/dailyContent'
 import { applyFiftyFifty } from '../data/powerups'
 import { achievements, getNewlyUnlocked } from '../data/achievements'
@@ -107,14 +107,18 @@ const GamePage = () => {
       const weeklyQuiz = getCurrentWeekQuiz()
       selectedQuestions = weeklyQuiz?.questions || []
     } else if (categoryId && categoryId !== 'random') {
-      const categoryQuestions = getQuestionsByCategory(categoryId)
-      selectedQuestions = shuffleArray(categoryQuestions).slice(0, QUESTIONS_PER_GAME)
+      // Use the new function that avoids recently used questions
+      selectedQuestions = getRandomFromCategory(categoryId, QUESTIONS_PER_GAME)
     } else {
+      // Random mix from all categories, avoiding repeats
       selectedQuestions = getRandomQuestions(QUESTIONS_PER_GAME)
     }
 
-    if (selectedQuestions.length === 0) {
-      selectedQuestions = getRandomQuestions(QUESTIONS_PER_GAME)
+    // Fallback if not enough questions
+    if (selectedQuestions.length < QUESTIONS_PER_GAME) {
+      const remaining = QUESTIONS_PER_GAME - selectedQuestions.length
+      const moreQuestions = getRandomQuestions(remaining)
+      selectedQuestions = [...selectedQuestions, ...moreQuestions]
     }
 
     setGameQuestions(selectedQuestions)

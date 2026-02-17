@@ -39,14 +39,27 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
 }
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig)
-export const auth = getAuth(app)
-export const db = getFirestore(app)
+// Check if Firebase is configured
+const isFirebaseConfigured = firebaseConfig.apiKey && firebaseConfig.apiKey.length > 0
 
-// Auth providers
-const googleProvider = new GoogleAuthProvider()
-const appleProvider = new OAuthProvider('apple.com')
+// Initialize Firebase only if configured
+let app = null
+let auth = null
+let db = null
+
+if (isFirebaseConfigured) {
+  app = initializeApp(firebaseConfig)
+  auth = getAuth(app)
+  db = getFirestore(app)
+} else {
+  console.warn('Firebase not configured - running in offline mode')
+}
+
+export { auth, db }
+
+// Auth providers (only if Firebase is configured)
+const googleProvider = isFirebaseConfigured ? new GoogleAuthProvider() : null
+const appleProvider = isFirebaseConfigured ? new OAuthProvider('apple.com') : null
 
 // ============================================
 // AUTHENTICATION FUNCTIONS
@@ -54,6 +67,9 @@ const appleProvider = new OAuthProvider('apple.com')
 
 // Email/Password Sign Up
 export const signUpWithEmail = async (email, password, displayName) => {
+  if (!isFirebaseConfigured) {
+    return { user: null, error: 'Firebase not configured. Please add Firebase credentials.' }
+  }
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password)
     const user = userCredential.user
@@ -72,6 +88,9 @@ export const signUpWithEmail = async (email, password, displayName) => {
 
 // Email/Password Sign In
 export const signInWithEmail = async (email, password) => {
+  if (!isFirebaseConfigured) {
+    return { user: null, error: 'Firebase not configured' }
+  }
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password)
     return { user: userCredential.user, error: null }
@@ -82,6 +101,9 @@ export const signInWithEmail = async (email, password) => {
 
 // Google Sign In
 export const signInWithGoogle = async () => {
+  if (!isFirebaseConfigured) {
+    return { user: null, error: 'Firebase not configured' }
+  }
   try {
     const result = await signInWithPopup(auth, googleProvider)
     const user = result.user
@@ -97,6 +119,9 @@ export const signInWithGoogle = async () => {
 
 // Apple Sign In
 export const signInWithApple = async () => {
+  if (!isFirebaseConfigured) {
+    return { user: null, error: 'Firebase not configured' }
+  }
   try {
     const result = await signInWithPopup(auth, appleProvider)
     const user = result.user
@@ -112,6 +137,9 @@ export const signInWithApple = async () => {
 
 // Sign Out
 export const logOut = async () => {
+  if (!isFirebaseConfigured) {
+    return { error: null }
+  }
   try {
     await signOut(auth)
     return { error: null }
@@ -122,6 +150,9 @@ export const logOut = async () => {
 
 // Password Reset
 export const resetPassword = async (email) => {
+  if (!isFirebaseConfigured) {
+    return { error: 'Firebase not configured' }
+  }
   try {
     await sendPasswordResetEmail(auth, email)
     return { error: null }
@@ -132,6 +163,11 @@ export const resetPassword = async (email) => {
 
 // Auth State Observer
 export const onAuthChange = (callback) => {
+  if (!isFirebaseConfigured) {
+    // Call callback with null user immediately
+    callback(null)
+    return () => {} // Return empty unsubscribe function
+  }
   return onAuthStateChanged(auth, callback)
 }
 
@@ -141,7 +177,7 @@ export const onAuthChange = (callback) => {
 
 // Create user document
 export const createUserDocument = async (user, additionalData = {}) => {
-  if (!user) return null
+  if (!user || !isFirebaseConfigured) return null
 
   const userRef = doc(db, 'users', user.uid)
   const userSnap = await getDoc(userRef)
