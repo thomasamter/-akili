@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
-import { useGameStore, usePlayerStore } from './lib/store'
+import { useGameStore, usePlayerStore, useAuthStore } from './lib/store'
 import { getTodayHeadline } from './data/dailyContent'
+import { onAuthChange, logOut } from './lib/firebase'
 import GamePage from './pages/GamePage'
 import CategoryPage from './pages/CategoryPage'
 import AchievementsPage from './pages/AchievementsPage'
@@ -16,11 +17,31 @@ function HomePage() {
   const navigate = useNavigate()
   const { streak, highScore } = useGameStore()
   const { coins, xp, lives, isPremium } = usePlayerStore()
+  const { isAuthenticated, user, login, logout } = useAuthStore()
   const [headline, setHeadline] = useState(null)
+
+  // Listen for Firebase auth state changes
+  useEffect(() => {
+    const unsubscribe = onAuthChange((firebaseUser) => {
+      if (firebaseUser) {
+        login({
+          id: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName || 'Player'
+        }, firebaseUser.accessToken)
+      }
+    })
+    return () => unsubscribe()
+  }, [login])
 
   useEffect(() => {
     setHeadline(getTodayHeadline())
   }, [])
+
+  const handleLogout = async () => {
+    await logOut()
+    logout()
+  }
 
   const handlePlay = (category) => {
     if (!isPremium && lives <= 0) {
@@ -39,7 +60,15 @@ function HomePage() {
             <span className="text-2xl">🧠</span>
             <span className="text-xl font-bold text-akili-gold">AKILI</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {isAuthenticated && (
+              <div className="flex items-center gap-1 bg-green-500/20 px-3 py-1.5 rounded-full">
+                <span>✓</span>
+                <span className="text-green-400 font-bold text-sm truncate max-w-[80px]">
+                  {user?.displayName?.split(' ')[0] || 'User'}
+                </span>
+              </div>
+            )}
             <button onClick={() => navigate('/premium')} className="flex items-center gap-1 bg-akili-gold/20 px-3 py-1.5 rounded-full">
               <span>🪙</span>
               <span className="text-akili-gold font-bold">{coins}</span>
@@ -56,7 +85,11 @@ function HomePage() {
       <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
         {/* Welcome */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-white mb-2">Welcome to AKILI! 👋</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            {isAuthenticated && user?.displayName
+              ? `Welcome, ${user.displayName}!`
+              : 'Welcome to AKILI!'}
+          </h1>
           <p className="text-gray-400">Test your African knowledge</p>
         </div>
 
@@ -138,9 +171,15 @@ function HomePage() {
             <button onClick={() => navigate('/premium')} className="glass-card p-4 text-white hover:border-akili-gold/50">
               💎 Premium
             </button>
-            <button onClick={() => navigate('/login')} className="glass-card p-4 text-white hover:border-akili-gold/50">
-              👤 Account
-            </button>
+            {isAuthenticated ? (
+              <button onClick={handleLogout} className="glass-card p-4 text-white hover:border-red-500/50">
+                🚪 Logout
+              </button>
+            ) : (
+              <button onClick={() => navigate('/login')} className="glass-card p-4 text-white hover:border-akili-gold/50">
+                👤 Sign In
+              </button>
+            )}
           </div>
         </div>
       </main>
