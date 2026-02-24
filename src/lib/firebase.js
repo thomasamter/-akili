@@ -347,7 +347,9 @@ const generateRoomCode = () => {
 
 // Create a new multiplayer game room
 export const createGameRoom = async (hostId, hostName, questions, difficulty = 'medium') => {
-  console.log('Creating game room...', { rtdb: !!rtdb, hostId, hostName })
+  console.log('Creating game room...')
+  console.log('Database URL:', firebaseConfig.databaseURL)
+  console.log('RTDB initialized:', !!rtdb)
 
   if (!rtdb) {
     console.error('RTDB not initialized')
@@ -360,7 +362,13 @@ export const createGameRoom = async (hostId, hostName, questions, difficulty = '
 
   try {
     console.log('Attempting to write to Firebase...')
-    await set(roomRef, {
+
+    // Add timeout to prevent hanging forever
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Connection timeout - check database URL')), 10000)
+    )
+
+    const writePromise = set(roomRef, {
       host: {
         id: hostId,
         name: hostName,
@@ -373,11 +381,14 @@ export const createGameRoom = async (hostId, hostName, questions, difficulty = '
       guest: null,
       questions: questions,
       difficulty: difficulty,
-      status: 'waiting', // waiting, countdown, playing, finished
+      status: 'waiting',
       currentQuestionIndex: 0,
       createdAt: rtdbTimestamp(),
       gameStartTime: null,
     })
+
+    await Promise.race([writePromise, timeoutPromise])
+
     console.log('Room created successfully:', roomCode)
     return { roomCode, error: null }
   } catch (error) {
