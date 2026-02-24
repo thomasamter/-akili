@@ -277,6 +277,10 @@ const MultiplayerPage = () => {
             <button
               onClick={handleCreateRoom}
               className="w-full py-4 bg-akili-gold text-akili-black font-bold text-lg rounded-xl hover:bg-akili-gold/90 transition-colors"
+              style={{
+                border: '3px solid #FFD700',
+                boxShadow: '0 0 15px rgba(253, 185, 19, 0.5)'
+              }}
             >
               Create Game
             </button>
