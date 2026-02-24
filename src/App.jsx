@@ -27,12 +27,13 @@ function HomePage() {
   useEffect(() => {
     const fetchNews = async () => {
       try {
-        const response = await fetch('/api/news')
+        // Add timestamp to prevent browser caching
+        const response = await fetch(`/api/news?t=${Date.now()}`)
         const data = await response.json()
         if (data.articles && data.articles.length > 0) {
-          // Pick a random article from the top 5
-          const topArticles = data.articles.slice(0, 5)
-          const randomArticle = topArticles[Math.floor(Math.random() * topArticles.length)]
+          // Pick a random article from all available
+          const randomIndex = Math.floor(Math.random() * data.articles.length)
+          const randomArticle = data.articles[randomIndex]
           setHeadline({
             headline: randomArticle.title,
             summary: randomArticle.description,
