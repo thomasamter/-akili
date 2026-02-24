@@ -27,13 +27,18 @@ function HomePage() {
   useEffect(() => {
     const fetchNews = async () => {
       try {
-        // Add timestamp to prevent browser caching
-        const response = await fetch(`/api/news?t=${Date.now()}`)
+        const response = await fetch('/api/news')
         const data = await response.json()
         if (data.articles && data.articles.length > 0) {
-          // Pick a random article from all available
-          const randomIndex = Math.floor(Math.random() * data.articles.length)
-          const randomArticle = data.articles[randomIndex]
+          // Get top 5 biggest stories and rotate through them
+          const top5 = data.articles.slice(0, 5)
+
+          // Get last shown index from localStorage and show next one
+          let lastIndex = parseInt(localStorage.getItem('akili_news_index') || '-1')
+          const nextIndex = (lastIndex + 1) % top5.length
+          localStorage.setItem('akili_news_index', nextIndex.toString())
+
+          const randomArticle = top5[nextIndex]
           setHeadline({
             headline: randomArticle.title,
             summary: randomArticle.description,
