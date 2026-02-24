@@ -21,6 +21,7 @@ function HomePage() {
   const [headline, setHeadline] = useState(null)
   const [newsLoading, setNewsLoading] = useState(true)
   const [newsExpanded, setNewsExpanded] = useState(false)
+  const [difficulty, setDifficulty] = useState('medium')
 
   // Fetch live African news
   useEffect(() => {
@@ -79,7 +80,7 @@ function HomePage() {
       alert('Out of lives! Wait for regeneration or go Premium.')
       return
     }
-    navigate(`/play?category=${category}`)
+    navigate(`/play?category=${category}&difficulty=${difficulty}`)
   }
 
   return (
@@ -165,9 +166,46 @@ function HomePage() {
           </div>
         )}
 
+        {/* Difficulty Selector */}
+        <div className="glass-card p-4">
+          <p className="text-xs text-gray-400 uppercase tracking-wider mb-3">Select Difficulty</p>
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              onClick={() => setDifficulty('easy')}
+              className={`py-2 px-3 rounded-lg font-medium text-sm transition-all ${
+                difficulty === 'easy'
+                  ? 'bg-green-500 text-white'
+                  : 'bg-white/10 text-gray-400 hover:bg-white/20'
+              }`}
+            >
+              🌱 Easy
+            </button>
+            <button
+              onClick={() => setDifficulty('medium')}
+              className={`py-2 px-3 rounded-lg font-medium text-sm transition-all ${
+                difficulty === 'medium'
+                  ? 'bg-yellow-500 text-black'
+                  : 'bg-white/10 text-gray-400 hover:bg-white/20'
+              }`}
+            >
+              🔥 Medium
+            </button>
+            <button
+              onClick={() => setDifficulty('hard')}
+              className={`py-2 px-3 rounded-lg font-medium text-sm transition-all ${
+                difficulty === 'hard'
+                  ? 'bg-red-500 text-white'
+                  : 'bg-white/10 text-gray-400 hover:bg-white/20'
+              }`}
+            >
+              💀 Hard
+            </button>
+          </div>
+        </div>
+
         {/* Play Button */}
         <button
-          onClick={() => navigate('/categories')}
+          onClick={() => navigate(`/categories?difficulty=${difficulty}`)}
           className="w-full btn-gold text-xl py-4 flex items-center justify-center gap-2"
         >
           ▶ PLAY NOW

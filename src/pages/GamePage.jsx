@@ -74,8 +74,9 @@ const GamePage = () => {
     coins,
   } = usePlayerStore()
 
-  // Get category from URL params
+  // Get category and difficulty from URL params
   const categoryId = searchParams.get('category') || 'random'
+  const difficulty = searchParams.get('difficulty') || 'medium'
   const isWeeklyQuiz = searchParams.get('type') === 'weekly'
 
   // Get category info
@@ -84,7 +85,7 @@ const GamePage = () => {
   // Initialize game
   useEffect(() => {
     initializeGame()
-  }, [categoryId, isWeeklyQuiz])
+  }, [categoryId, difficulty, isWeeklyQuiz])
 
   // Show achievement modals when new achievements are unlocked
   useEffect(() => {
@@ -108,16 +109,16 @@ const GamePage = () => {
       selectedQuestions = weeklyQuiz?.questions || []
     } else if (categoryId && categoryId !== 'random') {
       // Use the new function that avoids recently used questions
-      selectedQuestions = getRandomFromCategory(categoryId, QUESTIONS_PER_GAME)
+      selectedQuestions = getRandomFromCategory(categoryId, QUESTIONS_PER_GAME, difficulty)
     } else {
       // Random mix from all categories, avoiding repeats
-      selectedQuestions = getRandomQuestions(QUESTIONS_PER_GAME)
+      selectedQuestions = getRandomQuestions(QUESTIONS_PER_GAME, difficulty)
     }
 
     // Fallback if not enough questions
     if (selectedQuestions.length < QUESTIONS_PER_GAME) {
       const remaining = QUESTIONS_PER_GAME - selectedQuestions.length
-      const moreQuestions = getRandomQuestions(remaining)
+      const moreQuestions = getRandomQuestions(remaining, difficulty)
       selectedQuestions = [...selectedQuestions, ...moreQuestions]
     }
 

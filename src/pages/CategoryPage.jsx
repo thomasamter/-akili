@@ -1,10 +1,12 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { categories } from '../data/questions'
 import { usePlayerStore } from '../lib/store'
 
 const CategoryPage = () => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const difficulty = searchParams.get('difficulty') || 'medium'
   const { lives, isPremium } = usePlayerStore()
 
   const handleSelectCategory = (categoryId) => {
@@ -12,7 +14,7 @@ const CategoryPage = () => {
       alert('Out of lives! Wait for regeneration or go Premium.')
       return
     }
-    navigate(`/play?category=${categoryId}`)
+    navigate(`/play?category=${categoryId}&difficulty=${difficulty}`)
   }
 
   return (
@@ -29,7 +31,13 @@ const CategoryPage = () => {
             </svg>
           </button>
           <h1 className="flex-1 text-center text-xl font-bold text-white">Choose Category</h1>
-          <div className="w-10" />
+          <div className={`px-2 py-1 rounded text-xs font-bold ${
+            difficulty === 'easy' ? 'bg-green-500 text-white' :
+            difficulty === 'hard' ? 'bg-red-500 text-white' :
+            'bg-yellow-500 text-black'
+          }`}>
+            {difficulty.toUpperCase()}
+          </div>
         </div>
       </header>
 

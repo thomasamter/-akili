@@ -8109,14 +8109,27 @@ export const getQuestionsByDifficulty = (difficulty) => {
   return questions.filter(q => q.difficulty === difficulty)
 }
 
-// Get random questions
-export const getRandomQuestions = (count = 10) => {
-  const shuffled = [...questions].sort(() => Math.random() - 0.5)
+// Get random questions with optional difficulty filter
+export const getRandomQuestions = (count = 10, difficulty = null) => {
+  let filtered = questions
+  if (difficulty && difficulty !== 'all') {
+    // For easy: include easy + some medium
+    // For medium: include medium
+    // For hard: include medium + hard
+    if (difficulty === 'easy') {
+      filtered = questions.filter(q => q.difficulty === 'easy' || q.difficulty === 'medium')
+    } else if (difficulty === 'hard') {
+      filtered = questions.filter(q => q.difficulty === 'hard' || q.difficulty === 'medium')
+    } else {
+      filtered = questions.filter(q => q.difficulty === difficulty)
+    }
+  }
+  const shuffled = [...filtered].sort(() => Math.random() - 0.5)
   return shuffled.slice(0, count)
 }
 
 // Get random questions from a specific category, avoiding recently used questions
-export const getRandomFromCategory = (categoryId, count = 10) => {
+export const getRandomFromCategory = (categoryId, count = 10, difficulty = null) => {
   // Get recently used question IDs from localStorage
   const recentlyUsedKey = 'akili_recently_used_questions'
   let recentlyUsed = []
@@ -8130,7 +8143,18 @@ export const getRandomFromCategory = (categoryId, count = 10) => {
   }
 
   // Get questions from the category
-  const categoryQuestions = questions.filter(q => q.category === categoryId)
+  let categoryQuestions = questions.filter(q => q.category === categoryId)
+
+  // Filter by difficulty if specified
+  if (difficulty && difficulty !== 'all') {
+    if (difficulty === 'easy') {
+      categoryQuestions = categoryQuestions.filter(q => q.difficulty === 'easy' || q.difficulty === 'medium')
+    } else if (difficulty === 'hard') {
+      categoryQuestions = categoryQuestions.filter(q => q.difficulty === 'hard' || q.difficulty === 'medium')
+    } else {
+      categoryQuestions = categoryQuestions.filter(q => q.difficulty === difficulty)
+    }
+  }
 
   // Filter out recently used questions
   let availableQuestions = categoryQuestions.filter(q => !recentlyUsed.includes(q.id))
