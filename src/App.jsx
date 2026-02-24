@@ -9,6 +9,7 @@ import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import PremiumPage from './pages/PremiumPage'
 import LeaguePage from './pages/LeaguePage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
 
 // Working HomePage with core features
 function HomePage() {
@@ -157,6 +158,7 @@ function App() {
         <Route path="/achievements" element={<AchievementsPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/premium" element={<PremiumPage />} />
         <Route path="/league" element={<LeaguePage />} />
       </Routes>
