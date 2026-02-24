@@ -20,6 +20,7 @@ function HomePage() {
   const { isAuthenticated, user, login, logout } = useAuthStore()
   const [headline, setHeadline] = useState(null)
   const [newsLoading, setNewsLoading] = useState(true)
+  const [newsExpanded, setNewsExpanded] = useState(false)
 
   // Fetch live African news
   useEffect(() => {
@@ -125,32 +126,42 @@ function HomePage() {
 
         {/* Today's Headline */}
         {newsLoading ? (
-          <div className="glass-card p-4 border-l-4 border-red-500">
-            <p className="text-xs text-red-400 font-medium uppercase mb-1">📰 Loading News...</p>
-            <div className="h-4 bg-white/10 rounded animate-pulse mb-2"></div>
-            <div className="h-3 bg-white/10 rounded animate-pulse w-3/4"></div>
+          <div className="glass-card p-3 border-l-4 border-red-500">
+            <div className="h-4 bg-white/10 rounded animate-pulse"></div>
           </div>
         ) : headline && (
-          <div className="glass-card p-4 border-l-4 border-red-500">
-            <p className="text-xs text-red-400 font-medium uppercase mb-1">📰 African News</p>
-            <h3 className="text-white font-semibold mb-1">{headline.headline}</h3>
-            <p className="text-gray-400 text-sm mb-2">{headline.summary}</p>
-            <div className="flex items-center justify-between">
-              <p className="text-gray-500 text-xs">
-                {headline.source || headline.country}
-                {headline.publishedAt && ` • ${new Date(headline.publishedAt).toLocaleDateString()}`}
-              </p>
-              {headline.url && (
-                <a
-                  href={headline.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-akili-gold text-xs font-medium hover:underline"
-                >
-                  Read More →
-                </a>
-              )}
+          <div
+            className="glass-card p-3 border-l-4 border-red-500 cursor-pointer transition-all"
+            onClick={() => setNewsExpanded(!newsExpanded)}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-red-400">📰</span>
+                <h3 className="text-white text-sm font-medium truncate">{headline.headline}</h3>
+              </div>
+              <span className="text-gray-500 text-xs flex-shrink-0">{newsExpanded ? '▲' : '▼'}</span>
             </div>
+            {newsExpanded && (
+              <div className="mt-3 pt-3 border-t border-white/10">
+                <p className="text-gray-400 text-sm mb-3">{headline.summary}</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-gray-500 text-xs">
+                    {headline.source} • {headline.publishedAt && new Date(headline.publishedAt).toLocaleDateString()}
+                  </p>
+                  {headline.url && (
+                    <a
+                      href={headline.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-akili-gold text-xs font-medium hover:underline"
+                    >
+                      Full Story →
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
