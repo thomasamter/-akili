@@ -24,10 +24,13 @@ function HomePage() {
   useEffect(() => {
     const unsubscribe = onAuthChange((firebaseUser) => {
       if (firebaseUser) {
+        // Use displayName, or extract name from email (part before @)
+        const nameFromEmail = firebaseUser.email?.split('@')[0] || 'Player'
+        const displayName = firebaseUser.displayName || nameFromEmail
         login({
           id: firebaseUser.uid,
           email: firebaseUser.email,
-          displayName: firebaseUser.displayName || 'Player'
+          displayName
         }, firebaseUser.accessToken)
       }
     })
