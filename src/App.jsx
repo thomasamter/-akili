@@ -19,6 +19,36 @@ function HomePage() {
   const { coins, xp, lives, isPremium } = usePlayerStore()
   const { isAuthenticated, user, login, logout } = useAuthStore()
   const [headline, setHeadline] = useState(null)
+  const [newsLoading, setNewsLoading] = useState(true)
+
+  // Fetch live African news
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        const response = await fetch('/api/news')
+        const data = await response.json()
+        if (data.articles && data.articles.length > 0) {
+          // Pick a random article from the top 5
+          const topArticles = data.articles.slice(0, 5)
+          const randomArticle = topArticles[Math.floor(Math.random() * topArticles.length)]
+          setHeadline({
+            headline: randomArticle.title,
+            summary: randomArticle.description,
+            source: randomArticle.source?.name || 'News',
+            url: randomArticle.url,
+            publishedAt: randomArticle.publishedAt
+          })
+        }
+      } catch (error) {
+        console.error('Failed to fetch news:', error)
+        // Fallback to static headline
+        setHeadline(getTodayHeadline())
+      } finally {
+        setNewsLoading(false)
+      }
+    }
+    fetchNews()
+  }, [])
 
   // Listen for Firebase auth state changes
   useEffect(() => {
@@ -37,9 +67,6 @@ function HomePage() {
     return () => unsubscribe()
   }, [login])
 
-  useEffect(() => {
-    setHeadline(getTodayHeadline())
-  }, [])
 
   const handleLogout = async () => {
     await logOut()
@@ -97,12 +124,33 @@ function HomePage() {
         </div>
 
         {/* Today's Headline */}
-        {headline && (
+        {newsLoading ? (
           <div className="glass-card p-4 border-l-4 border-red-500">
-            <p className="text-xs text-red-400 font-medium uppercase mb-1">📰 Today's News</p>
+            <p className="text-xs text-red-400 font-medium uppercase mb-1">📰 Loading News...</p>
+            <div className="h-4 bg-white/10 rounded animate-pulse mb-2"></div>
+            <div className="h-3 bg-white/10 rounded animate-pulse w-3/4"></div>
+          </div>
+        ) : headline && (
+          <div className="glass-card p-4 border-l-4 border-red-500">
+            <p className="text-xs text-red-400 font-medium uppercase mb-1">📰 African News</p>
             <h3 className="text-white font-semibold mb-1">{headline.headline}</h3>
-            <p className="text-gray-400 text-sm">{headline.summary}</p>
-            <p className="text-gray-500 text-xs mt-2">{headline.country}</p>
+            <p className="text-gray-400 text-sm mb-2">{headline.summary}</p>
+            <div className="flex items-center justify-between">
+              <p className="text-gray-500 text-xs">
+                {headline.source || headline.country}
+                {headline.publishedAt && ` • ${new Date(headline.publishedAt).toLocaleDateString()}`}
+              </p>
+              {headline.url && (
+                <a
+                  href={headline.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-akili-gold text-xs font-medium hover:underline"
+                >
+                  Read More →
+                </a>
+              )}
+            </div>
           </div>
         )}
 
