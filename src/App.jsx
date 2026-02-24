@@ -132,47 +132,6 @@ function HomePage() {
           <p className="text-gray-400">Test your African knowledge</p>
         </div>
 
-        {/* Today's Headline */}
-        {newsLoading ? (
-          <div className="glass-card p-3 border-l-4 border-red-500">
-            <div className="h-4 bg-white/10 rounded animate-pulse"></div>
-          </div>
-        ) : headline && (
-          <div
-            className="glass-card p-3 border-l-4 border-red-500 cursor-pointer transition-all"
-            onClick={() => setNewsExpanded(!newsExpanded)}
-          >
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="text-red-400">📰</span>
-                <h3 className="text-white text-sm font-medium truncate">{headline.headline}</h3>
-              </div>
-              <span className="text-gray-500 text-xs flex-shrink-0">{newsExpanded ? '▲' : '▼'}</span>
-            </div>
-            {newsExpanded && (
-              <div className="mt-3 pt-3 border-t border-white/10">
-                <p className="text-gray-400 text-sm mb-3 line-clamp-2">{headline.summary}</p>
-                <div className="flex items-center justify-between">
-                  <p className="text-gray-500 text-xs">
-                    {headline.source} • {headline.publishedAt && new Date(headline.publishedAt).toLocaleDateString()}
-                  </p>
-                  {headline.url && (
-                    <a
-                      href={headline.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="text-akili-gold text-xs font-medium hover:underline"
-                    >
-                      Full Story →
-                    </a>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Difficulty Selector */}
         <div className="glass-card p-4">
           <p className="text-xs text-gray-400 uppercase tracking-wider mb-3">Select Difficulty</p>
@@ -225,6 +184,47 @@ function HomePage() {
             ⚡💪🏾 BATTLE A FRIEND
           </button>
         </div>
+
+        {/* Today's Headline */}
+        {newsLoading ? (
+          <div className="glass-card p-3 border-l-4 border-red-500">
+            <div className="h-4 bg-white/10 rounded animate-pulse"></div>
+          </div>
+        ) : headline && (
+          <div
+            className="glass-card p-3 border-l-4 border-red-500 cursor-pointer transition-all"
+            onClick={() => setNewsExpanded(!newsExpanded)}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-red-400">📰</span>
+                <h3 className="text-white text-sm font-medium truncate">{headline.headline}</h3>
+              </div>
+              <span className="text-gray-500 text-xs flex-shrink-0">{newsExpanded ? '▲' : '▼'}</span>
+            </div>
+            {newsExpanded && (
+              <div className="mt-3 pt-3 border-t border-white/10">
+                <p className="text-gray-400 text-sm mb-3 line-clamp-2">{headline.summary}</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-gray-500 text-xs">
+                    {headline.source} • {headline.publishedAt && new Date(headline.publishedAt).toLocaleDateString()}
+                  </p>
+                  {headline.url && (
+                    <a
+                      href={headline.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-akili-gold text-xs font-medium hover:underline"
+                    >
+                      Full Story →
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
