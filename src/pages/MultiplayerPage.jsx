@@ -106,11 +106,15 @@ const MultiplayerPage = () => {
 
   // Create a new room
   const handleCreateRoom = async () => {
-    setError('')
     setError('Creating room...')
 
     try {
       const questions = getRandomQuestions(QUESTIONS_PER_GAME, difficulty)
+
+      if (!questions || questions.length === 0) {
+        setError('Error: No questions found')
+        return
+      }
 
       const { roomCode: newCode, error: createError } = await createGameRoom(
         playerId,
@@ -120,19 +124,23 @@ const MultiplayerPage = () => {
       )
 
       if (createError) {
+        alert('Error creating room: ' + createError)
         setError('Error: ' + createError)
         return
       }
 
       if (!newCode) {
+        alert('No room code returned')
         setError('Failed to create room - no code returned')
         return
       }
 
+      alert('Room created: ' + newCode)
       setRoomCode(newCode)
       setIsHost(true)
       setScreen('lobby')
     } catch (err) {
+      alert('Catch error: ' + err.message)
       setError('Error: ' + err.message)
       console.error('Create room error:', err)
     }
