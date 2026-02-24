@@ -178,7 +178,7 @@ function HomePage() {
                   : 'bg-white/10 text-gray-400 hover:bg-white/20'
               }`}
             >
-              🦒 Easy
+              🍠 Easy
             </button>
             <button
               onClick={() => setDifficulty('medium')}
@@ -188,7 +188,7 @@ function HomePage() {
                   : 'bg-white/10 text-gray-400 hover:bg-white/20'
               }`}
             >
-              🦁 Medium
+              🌽 Medium
             </button>
             <button
               onClick={() => setDifficulty('hard')}
@@ -198,7 +198,7 @@ function HomePage() {
                   : 'bg-white/10 text-gray-400 hover:bg-white/20'
               }`}
             >
-              🐘 Hard
+              🌶️ Hard
             </button>
           </div>
         </div>
