@@ -205,23 +205,10 @@ function HomePage() {
             </div>
             {newsExpanded && (
               <div className="mt-3 pt-3 border-t border-white/10">
-                <p className="text-gray-400 text-sm mb-3 line-clamp-2">{headline.summary}</p>
-                <div className="flex items-center justify-between">
-                  <p className="text-gray-500 text-xs">
-                    {headline.source} • {headline.publishedAt && new Date(headline.publishedAt).toLocaleDateString()}
-                  </p>
-                  {headline.url && (
-                    <a
-                      href={headline.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="text-akili-gold text-xs font-medium hover:underline"
-                    >
-                      Full Story →
-                    </a>
-                  )}
-                </div>
+                <p className="text-gray-400 text-sm mb-3">{headline.summary}</p>
+                <p className="text-gray-500 text-xs">
+                  {headline.source} • {headline.publishedAt && new Date(headline.publishedAt).toLocaleDateString()}
+                </p>
               </div>
             )}
           </div>
