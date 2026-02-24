@@ -197,7 +197,7 @@ function HomePage() {
           >
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="text-red-400">📰</span>
+                <span className="text-red-400 text-xs font-bold">NEWS:</span>
                 <h3 className="text-white text-sm font-medium truncate">{headline.headline}</h3>
               </div>
               <span className="text-gray-500 text-xs flex-shrink-0">{newsExpanded ? '▲' : '▼'}</span>
