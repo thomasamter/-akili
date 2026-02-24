@@ -347,12 +347,19 @@ const generateRoomCode = () => {
 
 // Create a new multiplayer game room
 export const createGameRoom = async (hostId, hostName, questions, difficulty = 'medium') => {
-  if (!rtdb) return { roomCode: null, error: 'Database not configured' }
+  console.log('Creating game room...', { rtdb: !!rtdb, hostId, hostName })
+
+  if (!rtdb) {
+    console.error('RTDB not initialized')
+    return { roomCode: null, error: 'Database not configured. Please check Firebase setup.' }
+  }
 
   const roomCode = generateRoomCode()
+  console.log('Generated room code:', roomCode)
   const roomRef = ref(rtdb, `rooms/${roomCode}`)
 
   try {
+    console.log('Attempting to write to Firebase...')
     await set(roomRef, {
       host: {
         id: hostId,
@@ -371,8 +378,10 @@ export const createGameRoom = async (hostId, hostName, questions, difficulty = '
       createdAt: rtdbTimestamp(),
       gameStartTime: null,
     })
+    console.log('Room created successfully:', roomCode)
     return { roomCode, error: null }
   } catch (error) {
+    console.error('Firebase write error:', error)
     return { roomCode: null, error: error.message }
   }
 }
