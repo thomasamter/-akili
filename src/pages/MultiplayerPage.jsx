@@ -230,7 +230,7 @@ const MultiplayerPage = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-8"
           >
-            <span className="text-6xl mb-4 block">⚔️</span>
+            <span className="text-6xl mb-4 block">⚡💪🏾</span>
             <h1 className="text-3xl font-bold text-white mb-2">Battle Mode</h1>
             <p className="text-white/60">Challenge a friend to a trivia duel!</p>
           </motion.div>

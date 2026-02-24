@@ -222,7 +222,7 @@ function HomePage() {
             onClick={() => navigate('/multiplayer')}
             className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-lg rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
           >
-            ⚔️ BATTLE A FRIEND
+            ⚡💪🏾 BATTLE A FRIEND
           </button>
         </div>
 
