@@ -176,7 +176,14 @@ function HomePage() {
                 🚪 Logout
               </button>
             ) : (
-              <button onClick={() => navigate('/login')} className="glass-card p-4 text-white hover:border-akili-gold/50">
+              <button
+                onClick={() => navigate('/login')}
+                className="p-4 text-akili-gold font-bold rounded-xl hover:bg-akili-gold/20 transition-colors"
+                style={{
+                  border: '2px solid #FDB913',
+                  background: 'rgba(253, 185, 19, 0.1)'
+                }}
+              >
                 👤 Sign In
               </button>
             )}
