@@ -11,6 +11,7 @@ import SignupPage from './pages/SignupPage'
 import PremiumPage from './pages/PremiumPage'
 import LeaguePage from './pages/LeaguePage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import MultiplayerPage from './pages/MultiplayerPage'
 
 // Working HomePage with core features
 function HomePage() {
@@ -209,13 +210,21 @@ function HomePage() {
           </div>
         </div>
 
-        {/* Play Button */}
-        <button
-          onClick={() => navigate(`/categories?difficulty=${difficulty}`)}
-          className="w-full btn-gold text-xl py-4 flex items-center justify-center gap-2"
-        >
-          ▶ PLAY NOW
-        </button>
+        {/* Play Buttons */}
+        <div className="space-y-3">
+          <button
+            onClick={() => navigate(`/categories?difficulty=${difficulty}`)}
+            className="w-full btn-gold text-xl py-4 flex items-center justify-center gap-2"
+          >
+            ▶ PLAY NOW
+          </button>
+          <button
+            onClick={() => navigate('/multiplayer')}
+            className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-lg rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+          >
+            ⚔️ BATTLE A FRIEND
+          </button>
+        </div>
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
@@ -313,6 +322,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/premium" element={<PremiumPage />} />
         <Route path="/league" element={<LeaguePage />} />
+        <Route path="/multiplayer" element={<MultiplayerPage />} />
       </Routes>
     </BrowserRouter>
   )

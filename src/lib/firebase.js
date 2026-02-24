@@ -27,6 +27,18 @@ import {
   getDocs,
   serverTimestamp,
 } from 'firebase/firestore'
+import {
+  getDatabase,
+  ref,
+  set,
+  get,
+  update,
+  onValue,
+  off,
+  remove,
+  push,
+  serverTimestamp as rtdbTimestamp,
+} from 'firebase/database'
 
 // Firebase configuration
 // TODO: Replace with your actual Firebase config from Firebase Console
@@ -46,16 +58,18 @@ const isFirebaseConfigured = firebaseConfig.apiKey && firebaseConfig.apiKey.leng
 let app = null
 let auth = null
 let db = null
+let rtdb = null
 
 if (isFirebaseConfigured) {
   app = initializeApp(firebaseConfig)
   auth = getAuth(app)
   db = getFirestore(app)
+  rtdb = getDatabase(app)
 } else {
   console.warn('Firebase not configured - running in offline mode')
 }
 
-export { auth, db }
+export { auth, db, rtdb }
 
 // Auth providers (only if Firebase is configured)
 const googleProvider = isFirebaseConfigured ? new GoogleAuthProvider() : null
@@ -321,9 +335,195 @@ export const addWeeklyXP = async (userId, xpAmount) => {
   }
 }
 
+// ============================================
+// MULTIPLAYER FUNCTIONS (Realtime Database)
+// ============================================
+
+// Generate a 6-digit room code
+const generateRoomCode = () => {
+  return Math.random().toString(36).substring(2, 8).toUpperCase()
+}
+
+// Create a new multiplayer game room
+export const createGameRoom = async (hostId, hostName, questions, difficulty = 'medium') => {
+  if (!rtdb) return { roomCode: null, error: 'Database not configured' }
+
+  const roomCode = generateRoomCode()
+  const roomRef = ref(rtdb, `rooms/${roomCode}`)
+
+  try {
+    await set(roomRef, {
+      host: {
+        id: hostId,
+        name: hostName,
+        score: 0,
+        currentQuestion: 0,
+        answers: [],
+        ready: true,
+        connected: true,
+      },
+      guest: null,
+      questions: questions,
+      difficulty: difficulty,
+      status: 'waiting', // waiting, countdown, playing, finished
+      currentQuestionIndex: 0,
+      createdAt: rtdbTimestamp(),
+      gameStartTime: null,
+    })
+    return { roomCode, error: null }
+  } catch (error) {
+    return { roomCode: null, error: error.message }
+  }
+}
+
+// Join an existing game room
+export const joinGameRoom = async (roomCode, guestId, guestName) => {
+  if (!rtdb) return { success: false, error: 'Database not configured' }
+
+  const roomRef = ref(rtdb, `rooms/${roomCode}`)
+
+  try {
+    const snapshot = await get(roomRef)
+    if (!snapshot.exists()) {
+      return { success: false, error: 'Room not found' }
+    }
+
+    const roomData = snapshot.val()
+    if (roomData.guest) {
+      return { success: false, error: 'Room is full' }
+    }
+
+    if (roomData.status !== 'waiting') {
+      return { success: false, error: 'Game already started' }
+    }
+
+    await update(roomRef, {
+      guest: {
+        id: guestId,
+        name: guestName,
+        score: 0,
+        currentQuestion: 0,
+        answers: [],
+        ready: true,
+        connected: true,
+      },
+    })
+
+    return { success: true, error: null, roomData }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+// Listen to room updates
+export const subscribeToRoom = (roomCode, callback) => {
+  if (!rtdb) return () => {}
+
+  const roomRef = ref(rtdb, `rooms/${roomCode}`)
+  onValue(roomRef, (snapshot) => {
+    if (snapshot.exists()) {
+      callback(snapshot.val())
+    } else {
+      callback(null)
+    }
+  })
+
+  return () => off(roomRef)
+}
+
+// Update player score
+export const updatePlayerScore = async (roomCode, playerId, isHost, score, currentQuestion, answer) => {
+  if (!rtdb) return
+
+  const playerPath = isHost ? 'host' : 'guest'
+  const roomRef = ref(rtdb, `rooms/${roomCode}/${playerPath}`)
+
+  try {
+    const snapshot = await get(roomRef)
+    const currentData = snapshot.val() || {}
+    const currentAnswers = currentData.answers || []
+
+    await update(roomRef, {
+      score: score,
+      currentQuestion: currentQuestion,
+      answers: [...currentAnswers, answer],
+    })
+  } catch (error) {
+    console.error('Error updating score:', error)
+  }
+}
+
+// Start the game (host only)
+export const startMultiplayerGame = async (roomCode) => {
+  if (!rtdb) return
+
+  const roomRef = ref(rtdb, `rooms/${roomCode}`)
+
+  try {
+    await update(roomRef, {
+      status: 'countdown',
+      gameStartTime: Date.now() + 3000, // 3 second countdown
+    })
+
+    // After countdown, set to playing
+    setTimeout(async () => {
+      await update(roomRef, { status: 'playing' })
+    }, 3000)
+  } catch (error) {
+    console.error('Error starting game:', error)
+  }
+}
+
+// End the game
+export const endMultiplayerGame = async (roomCode) => {
+  if (!rtdb) return
+
+  const roomRef = ref(rtdb, `rooms/${roomCode}`)
+
+  try {
+    await update(roomRef, { status: 'finished' })
+  } catch (error) {
+    console.error('Error ending game:', error)
+  }
+}
+
+// Leave/delete room
+export const leaveRoom = async (roomCode, isHost) => {
+  if (!rtdb) return
+
+  const roomRef = ref(rtdb, `rooms/${roomCode}`)
+
+  try {
+    if (isHost) {
+      // Host leaving deletes the room
+      await remove(roomRef)
+    } else {
+      // Guest leaving just removes guest
+      await update(roomRef, { guest: null })
+    }
+  } catch (error) {
+    console.error('Error leaving room:', error)
+  }
+}
+
+// Update player connection status
+export const updateConnectionStatus = async (roomCode, isHost, connected) => {
+  if (!rtdb) return
+
+  const playerPath = isHost ? 'host' : 'guest'
+  const roomRef = ref(rtdb, `rooms/${roomCode}/${playerPath}`)
+
+  try {
+    await update(roomRef, { connected })
+  } catch (error) {
+    console.error('Error updating connection:', error)
+  }
+}
+
 export default {
   auth,
   db,
+  rtdb,
   signUpWithEmail,
   signInWithEmail,
   signInWithGoogle,
@@ -336,4 +536,13 @@ export default {
   createUserDocument,
   getWeeklyLeaderboard,
   addWeeklyXP,
+  // Multiplayer
+  createGameRoom,
+  joinGameRoom,
+  subscribeToRoom,
+  updatePlayerScore,
+  startMultiplayerGame,
+  endMultiplayerGame,
+  leaveRoom,
+  updateConnectionStatus,
 }
