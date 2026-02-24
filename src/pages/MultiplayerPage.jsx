@@ -288,6 +288,7 @@ const MultiplayerPage = () => {
             </div>
 
             <div className="space-y-2">
+              <p className="text-center text-gray-400 text-sm mb-2">Share code, play together</p>
               <input
                 type="text"
                 value={inputCode}

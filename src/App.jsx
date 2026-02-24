@@ -183,7 +183,6 @@ function HomePage() {
           >
             ⚡💪🏾 BATTLE A FRIEND
           </button>
-          <p className="text-center text-gray-400 text-sm mt-1">Share code, play together</p>
         </div>
 
         {/* Today's Headline */}
