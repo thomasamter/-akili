@@ -10,7 +10,6 @@ export default async function handler(req, res) {
   const apiKey = process.env.NEWSAPI_KEY
 
   if (!apiKey) {
-    // Return fallback news if no API key
     return res.status(200).json({
       articles: [
         {
@@ -26,11 +25,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Fetch African news from NewsAPI
-    // Using African news sources
-    const domains = 'bbc.co.uk,aljazeera.com,reuters.com'
+    // African countries and keywords for better filtering
+    const africanQuery = '(Nigeria OR Kenya OR Ghana OR "South Africa" OR Ethiopia OR Egypt OR Morocco OR Tanzania OR Uganda OR Rwanda OR Senegal OR "Ivory Coast" OR Cameroon OR Zimbabwe OR Zambia OR Botswana OR Namibia OR Mozambique OR Angola OR "Democratic Republic of Congo" OR Sudan OR Tunisia OR Algeria OR Libya)'
+
+    // Fetch from major news sources covering Africa
     const response = await fetch(
-      `https://newsapi.org/v2/everything?q=Africa&domains=${domains}&sortBy=publishedAt&pageSize=10&apiKey=${apiKey}`
+      `https://newsapi.org/v2/everything?q=${encodeURIComponent(africanQuery)}&sortBy=publishedAt&pageSize=15&language=en&apiKey=${apiKey}`
     )
 
     if (!response.ok) {
@@ -41,22 +41,36 @@ export default async function handler(req, res) {
 
     const data = await response.json()
 
+    // Filter to ensure articles are actually about Africa
+    const africanKeywords = [
+      'nigeria', 'kenya', 'ghana', 'south africa', 'ethiopia', 'egypt',
+      'morocco', 'tanzania', 'uganda', 'rwanda', 'senegal', 'ivory coast',
+      'cameroon', 'zimbabwe', 'zambia', 'botswana', 'namibia', 'mozambique',
+      'angola', 'congo', 'sudan', 'tunisia', 'algeria', 'libya', 'african',
+      'africa', 'nairobi', 'lagos', 'accra', 'johannesburg', 'cairo',
+      'addis ababa', 'kigali', 'dakar', 'abuja', 'cape town', 'casablanca'
+    ]
+
+    const filteredArticles = data.articles?.filter(article => {
+      const text = `${article.title} ${article.description}`.toLowerCase()
+      return africanKeywords.some(keyword => text.includes(keyword))
+    }) || []
+
     // Format the response
-    const articles = data.articles?.map(article => ({
+    const articles = filteredArticles.slice(0, 10).map(article => ({
       title: article.title,
       description: article.description,
       url: article.url,
       source: { name: article.source?.name || 'News' },
       publishedAt: article.publishedAt,
       urlToImage: article.urlToImage
-    })) || []
+    }))
 
     return res.status(200).json({ articles })
 
   } catch (error) {
     console.error('News API error:', error)
 
-    // Return fallback on error
     return res.status(200).json({
       articles: [
         {
