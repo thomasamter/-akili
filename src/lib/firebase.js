@@ -20,12 +20,14 @@ import {
   getDoc,
   setDoc,
   updateDoc,
+  deleteDoc,
   collection,
   query,
   orderBy,
   limit,
   getDocs,
   serverTimestamp,
+  onSnapshot,
 } from 'firebase/firestore'
 import {
   getDatabase,
@@ -337,7 +339,7 @@ export const addWeeklyXP = async (userId, xpAmount) => {
 }
 
 // ============================================
-// MULTIPLAYER FUNCTIONS (Realtime Database)
+// MULTIPLAYER FUNCTIONS (Using Firestore)
 // ============================================
 
 // Generate a 6-digit room code
@@ -347,28 +349,15 @@ const generateRoomCode = () => {
 
 // Create a new multiplayer game room
 export const createGameRoom = async (hostId, hostName, questions, difficulty = 'medium') => {
-  console.log('Creating game room...')
-  console.log('Database URL:', firebaseConfig.databaseURL)
-  console.log('RTDB initialized:', !!rtdb)
-
-  if (!rtdb) {
-    console.error('RTDB not initialized')
-    return { roomCode: null, error: 'Database not configured. Please check Firebase setup.' }
+  if (!db) {
+    return { roomCode: null, error: 'Database not configured' }
   }
 
   const roomCode = generateRoomCode()
-  console.log('Generated room code:', roomCode)
-  const roomRef = ref(rtdb, `rooms/${roomCode}`)
 
   try {
-    console.log('Attempting to write to Firebase...')
-
-    // Add timeout to prevent hanging forever
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Connection timeout - check database URL')), 10000)
-    )
-
-    const writePromise = set(roomRef, {
+    const roomRef = doc(db, 'rooms', roomCode)
+    await setDoc(roomRef, {
       host: {
         id: hostId,
         name: hostName,
@@ -383,13 +372,10 @@ export const createGameRoom = async (hostId, hostName, questions, difficulty = '
       difficulty: difficulty,
       status: 'waiting',
       currentQuestionIndex: 0,
-      createdAt: rtdbTimestamp(),
+      createdAt: serverTimestamp(),
       gameStartTime: null,
     })
 
-    await Promise.race([writePromise, timeoutPromise])
-
-    console.log('Room created successfully:', roomCode)
     return { roomCode, error: null }
   } catch (error) {
     console.error('Firebase write error:', error)
@@ -399,17 +385,17 @@ export const createGameRoom = async (hostId, hostName, questions, difficulty = '
 
 // Join an existing game room
 export const joinGameRoom = async (roomCode, guestId, guestName) => {
-  if (!rtdb) return { success: false, error: 'Database not configured' }
-
-  const roomRef = ref(rtdb, `rooms/${roomCode}`)
+  if (!db) return { success: false, error: 'Database not configured' }
 
   try {
-    const snapshot = await get(roomRef)
-    if (!snapshot.exists()) {
+    const roomRef = doc(db, 'rooms', roomCode)
+    const roomSnap = await getDoc(roomRef)
+
+    if (!roomSnap.exists()) {
       return { success: false, error: 'Room not found' }
     }
 
-    const roomData = snapshot.val()
+    const roomData = roomSnap.data()
     if (roomData.guest) {
       return { success: false, error: 'Room is full' }
     }
@@ -418,7 +404,7 @@ export const joinGameRoom = async (roomCode, guestId, guestName) => {
       return { success: false, error: 'Game already started' }
     }
 
-    await update(roomRef, {
+    await updateDoc(roomRef, {
       guest: {
         id: guestId,
         name: guestName,
@@ -438,36 +424,37 @@ export const joinGameRoom = async (roomCode, guestId, guestName) => {
 
 // Listen to room updates
 export const subscribeToRoom = (roomCode, callback) => {
-  if (!rtdb) return () => {}
+  if (!db) return () => {}
 
-  const roomRef = ref(rtdb, `rooms/${roomCode}`)
-  onValue(roomRef, (snapshot) => {
+  const roomRef = doc(db, 'rooms', roomCode)
+
+  const unsubscribe = onSnapshot(roomRef, (snapshot) => {
     if (snapshot.exists()) {
-      callback(snapshot.val())
+      callback(snapshot.data())
     } else {
       callback(null)
     }
   })
 
-  return () => off(roomRef)
+  return unsubscribe
 }
 
 // Update player score
 export const updatePlayerScore = async (roomCode, playerId, isHost, score, currentQuestion, answer) => {
-  if (!rtdb) return
-
-  const playerPath = isHost ? 'host' : 'guest'
-  const roomRef = ref(rtdb, `rooms/${roomCode}/${playerPath}`)
+  if (!db) return
 
   try {
-    const snapshot = await get(roomRef)
-    const currentData = snapshot.val() || {}
-    const currentAnswers = currentData.answers || []
+    const roomRef = doc(db, 'rooms', roomCode)
+    const roomSnap = await getDoc(roomRef)
+    const roomData = roomSnap.data()
 
-    await update(roomRef, {
-      score: score,
-      currentQuestion: currentQuestion,
-      answers: [...currentAnswers, answer],
+    const playerPath = isHost ? 'host' : 'guest'
+    const currentAnswers = roomData[playerPath]?.answers || []
+
+    await updateDoc(roomRef, {
+      [`${playerPath}.score`]: score,
+      [`${playerPath}.currentQuestion`]: currentQuestion,
+      [`${playerPath}.answers`]: [...currentAnswers, answer],
     })
   } catch (error) {
     console.error('Error updating score:', error)
@@ -476,19 +463,17 @@ export const updatePlayerScore = async (roomCode, playerId, isHost, score, curre
 
 // Start the game (host only)
 export const startMultiplayerGame = async (roomCode) => {
-  if (!rtdb) return
-
-  const roomRef = ref(rtdb, `rooms/${roomCode}`)
+  if (!db) return
 
   try {
-    await update(roomRef, {
+    const roomRef = doc(db, 'rooms', roomCode)
+    await updateDoc(roomRef, {
       status: 'countdown',
-      gameStartTime: Date.now() + 3000, // 3 second countdown
+      gameStartTime: Date.now() + 3000,
     })
 
-    // After countdown, set to playing
     setTimeout(async () => {
-      await update(roomRef, { status: 'playing' })
+      await updateDoc(roomRef, { status: 'playing' })
     }, 3000)
   } catch (error) {
     console.error('Error starting game:', error)
@@ -497,12 +482,11 @@ export const startMultiplayerGame = async (roomCode) => {
 
 // End the game
 export const endMultiplayerGame = async (roomCode) => {
-  if (!rtdb) return
-
-  const roomRef = ref(rtdb, `rooms/${roomCode}`)
+  if (!db) return
 
   try {
-    await update(roomRef, { status: 'finished' })
+    const roomRef = doc(db, 'rooms', roomCode)
+    await updateDoc(roomRef, { status: 'finished' })
   } catch (error) {
     console.error('Error ending game:', error)
   }
@@ -510,17 +494,14 @@ export const endMultiplayerGame = async (roomCode) => {
 
 // Leave/delete room
 export const leaveRoom = async (roomCode, isHost) => {
-  if (!rtdb) return
-
-  const roomRef = ref(rtdb, `rooms/${roomCode}`)
+  if (!db) return
 
   try {
+    const roomRef = doc(db, 'rooms', roomCode)
     if (isHost) {
-      // Host leaving deletes the room
-      await remove(roomRef)
+      await deleteDoc(roomRef)
     } else {
-      // Guest leaving just removes guest
-      await update(roomRef, { guest: null })
+      await updateDoc(roomRef, { guest: null })
     }
   } catch (error) {
     console.error('Error leaving room:', error)
@@ -529,13 +510,12 @@ export const leaveRoom = async (roomCode, isHost) => {
 
 // Update player connection status
 export const updateConnectionStatus = async (roomCode, isHost, connected) => {
-  if (!rtdb) return
-
-  const playerPath = isHost ? 'host' : 'guest'
-  const roomRef = ref(rtdb, `rooms/${roomCode}/${playerPath}`)
+  if (!db) return
 
   try {
-    await update(roomRef, { connected })
+    const playerPath = isHost ? 'host' : 'guest'
+    const roomRef = doc(db, 'rooms', roomCode)
+    await updateDoc(roomRef, { [`${playerPath}.connected`]: connected })
   } catch (error) {
     console.error('Error updating connection:', error)
   }

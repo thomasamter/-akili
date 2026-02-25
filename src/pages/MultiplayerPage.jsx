@@ -124,23 +124,19 @@ const MultiplayerPage = () => {
       )
 
       if (createError) {
-        alert('Error creating room: ' + createError)
         setError('Error: ' + createError)
         return
       }
 
       if (!newCode) {
-        alert('No room code returned')
-        setError('Failed to create room - no code returned')
+        setError('Failed to create room')
         return
       }
 
-      alert('Room created: ' + newCode)
       setRoomCode(newCode)
       setIsHost(true)
       setScreen('lobby')
     } catch (err) {
-      alert('Catch error: ' + err.message)
       setError('Error: ' + err.message)
       console.error('Create room error:', err)
     }
