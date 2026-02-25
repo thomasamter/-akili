@@ -8109,27 +8109,69 @@ export const getQuestionsByDifficulty = (difficulty) => {
   return questions.filter(q => q.difficulty === difficulty)
 }
 
-// Get random questions with optional difficulty filter
-export const getRandomQuestions = (count = 10, difficulty = null) => {
+// Get random questions with optional difficulty and country filter, avoiding recently used
+export const getRandomQuestions = (count = 10, difficulty = null, country = null) => {
+  // Get recently used question IDs from localStorage
+  const recentlyUsedKey = 'akili_recently_used_questions'
+  let recentlyUsed = []
+  try {
+    const stored = localStorage.getItem(recentlyUsedKey)
+    if (stored) {
+      recentlyUsed = JSON.parse(stored)
+    }
+  } catch (e) {
+    recentlyUsed = []
+  }
+
   let filtered = questions
+
+  // Filter by country if specified
+  if (country) {
+    filtered = filtered.filter(q => q.country && q.country.toLowerCase().includes(country.toLowerCase()))
+  }
+
+  // Filter by difficulty
   if (difficulty && difficulty !== 'all') {
-    // For easy: include easy + some medium
-    // For medium: include medium
-    // For hard: include medium + hard
     if (difficulty === 'easy') {
-      filtered = questions.filter(q => q.difficulty === 'easy' || q.difficulty === 'medium')
+      filtered = filtered.filter(q => q.difficulty === 'easy' || q.difficulty === 'medium')
     } else if (difficulty === 'hard') {
-      filtered = questions.filter(q => q.difficulty === 'hard' || q.difficulty === 'medium')
+      filtered = filtered.filter(q => q.difficulty === 'hard' || q.difficulty === 'medium')
     } else {
-      filtered = questions.filter(q => q.difficulty === difficulty)
+      filtered = filtered.filter(q => q.difficulty === difficulty)
     }
   }
-  const shuffled = [...filtered].sort(() => Math.random() - 0.5)
-  return shuffled.slice(0, count)
+
+  // Filter out recently used questions
+  let availableQuestions = filtered.filter(q => !recentlyUsed.includes(q.id))
+
+  // If not enough questions available, reset and use all
+  if (availableQuestions.length < count) {
+    availableQuestions = filtered
+  }
+
+  // Fisher-Yates shuffle for better randomization
+  const shuffled = [...availableQuestions]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+
+  const selectedQuestions = shuffled.slice(0, count)
+
+  // Update recently used - store up to 200 question IDs
+  const selectedIds = selectedQuestions.map(q => q.id)
+  const newRecentlyUsed = [...selectedIds, ...recentlyUsed].slice(0, 200)
+  try {
+    localStorage.setItem(recentlyUsedKey, JSON.stringify(newRecentlyUsed))
+  } catch (e) {
+    // Ignore localStorage errors
+  }
+
+  return selectedQuestions
 }
 
 // Get random questions from a specific category, avoiding recently used questions
-export const getRandomFromCategory = (categoryId, count = 10, difficulty = null) => {
+export const getRandomFromCategory = (categoryId, count = 10, difficulty = null, country = null) => {
   // Get recently used question IDs from localStorage
   const recentlyUsedKey = 'akili_recently_used_questions'
   let recentlyUsed = []
@@ -8144,6 +8186,11 @@ export const getRandomFromCategory = (categoryId, count = 10, difficulty = null)
 
   // Get questions from the category
   let categoryQuestions = questions.filter(q => q.category === categoryId)
+
+  // Filter by country if specified
+  if (country) {
+    categoryQuestions = categoryQuestions.filter(q => q.country && q.country.toLowerCase().includes(country.toLowerCase()))
+  }
 
   // Filter by difficulty if specified
   if (difficulty && difficulty !== 'all') {
@@ -8174,9 +8221,9 @@ export const getRandomFromCategory = (categoryId, count = 10, difficulty = null)
   // Get the questions
   const selectedQuestions = shuffled.slice(0, count)
 
-  // Update recently used
+  // Update recently used - store up to 200 question IDs
   const selectedIds = selectedQuestions.map(q => q.id)
-  const newRecentlyUsed = [...selectedIds, ...recentlyUsed].slice(0, 100)
+  const newRecentlyUsed = [...selectedIds, ...recentlyUsed].slice(0, 200)
   try {
     localStorage.setItem(recentlyUsedKey, JSON.stringify(newRecentlyUsed))
   } catch (e) {

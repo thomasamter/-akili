@@ -7,6 +7,7 @@ const CategoryPage = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const difficulty = searchParams.get('difficulty') || 'medium'
+  const country = searchParams.get('country') || ''
   const { lives, isPremium } = usePlayerStore()
 
   const handleSelectCategory = (categoryId) => {
@@ -14,7 +15,7 @@ const CategoryPage = () => {
       alert('Out of lives! Wait for regeneration or go Premium.')
       return
     }
-    navigate(`/play?category=${categoryId}&difficulty=${difficulty}`)
+    navigate(`/play?category=${categoryId}&difficulty=${difficulty}${country ? `&country=${country}` : ''}`)
   }
 
   return (
@@ -30,7 +31,9 @@ const CategoryPage = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h1 className="flex-1 text-center text-xl font-bold text-white">Choose Category</h1>
+          <h1 className="flex-1 text-center text-xl font-bold text-white">
+            {country ? `${country} Quiz` : 'Choose Category'}
+          </h1>
           <div className={`px-2 py-1 rounded text-xs font-bold ${
             difficulty === 'easy' ? 'bg-green-500 text-white' :
             difficulty === 'hard' ? 'bg-red-500 text-white' :

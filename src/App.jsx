@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
 import { useGameStore, usePlayerStore, useAuthStore } from './lib/store'
-import { getTodayHeadline } from './data/dailyContent'
 import { onAuthChange, logOut } from './lib/firebase'
 import GamePage from './pages/GamePage'
 import CategoryPage from './pages/CategoryPage'
@@ -19,45 +18,9 @@ function HomePage() {
   const { streak, highScore } = useGameStore()
   const { coins, xp, lives, isPremium } = usePlayerStore()
   const { isAuthenticated, user, login, logout } = useAuthStore()
-  const [headline, setHeadline] = useState(null)
-  const [newsLoading, setNewsLoading] = useState(true)
-  const [newsExpanded, setNewsExpanded] = useState(false)
   const [difficulty, setDifficulty] = useState('medium')
+  const [selectedCountry, setSelectedCountry] = useState(null)
 
-  // Fetch live African news
-  useEffect(() => {
-    const fetchNews = async () => {
-      try {
-        const response = await fetch('/api/news')
-        const data = await response.json()
-        if (data.articles && data.articles.length > 0) {
-          // Get top 5 biggest stories and rotate through them
-          const top5 = data.articles.slice(0, 5)
-
-          // Get last shown index from localStorage and show next one
-          let lastIndex = parseInt(localStorage.getItem('akili_news_index') || '-1')
-          const nextIndex = (lastIndex + 1) % top5.length
-          localStorage.setItem('akili_news_index', nextIndex.toString())
-
-          const randomArticle = top5[nextIndex]
-          setHeadline({
-            headline: randomArticle.title,
-            summary: randomArticle.description,
-            source: randomArticle.source?.name || 'News',
-            url: randomArticle.url,
-            publishedAt: randomArticle.publishedAt
-          })
-        }
-      } catch (error) {
-        console.error('Failed to fetch news:', error)
-        // Fallback to static headline
-        setHeadline(getTodayHeadline())
-      } finally {
-        setNewsLoading(false)
-      }
-    }
-    fetchNews()
-  }, [])
 
   // Listen for Firebase auth state changes
   useEffect(() => {
@@ -169,13 +132,48 @@ function HomePage() {
           </div>
         </div>
 
+        {/* Country Selector */}
+        <div className="glass-card p-4">
+          <p className="text-xs text-gray-400 uppercase tracking-wider mb-3">Play by Country</p>
+          <div className="grid grid-cols-4 gap-2 mb-3">
+            {[
+              { id: 'Nigeria', flag: '🇳🇬', name: 'Nigeria' },
+              { id: 'Kenya', flag: '🇰🇪', name: 'Kenya' },
+              { id: 'South Africa', flag: '🇿🇦', name: 'S. Africa' },
+              { id: 'Ghana', flag: '🇬🇭', name: 'Ghana' },
+              { id: 'Ethiopia', flag: '🇪🇹', name: 'Ethiopia' },
+              { id: 'Egypt', flag: '🇪🇬', name: 'Egypt' },
+              { id: 'Tanzania', flag: '🇹🇿', name: 'Tanzania' },
+              { id: 'Rwanda', flag: '🇷🇼', name: 'Rwanda' },
+            ].map((country) => (
+              <button
+                key={country.id}
+                onClick={() => setSelectedCountry(selectedCountry === country.id ? null : country.id)}
+                className={`py-2 px-1 rounded-lg text-center transition-all ${
+                  selectedCountry === country.id
+                    ? 'bg-akili-gold text-black'
+                    : 'bg-white/10 text-gray-400 hover:bg-white/20'
+                }`}
+              >
+                <span className="text-lg block">{country.flag}</span>
+                <span className="text-xs">{country.name}</span>
+              </button>
+            ))}
+          </div>
+          {selectedCountry && (
+            <p className="text-center text-akili-gold text-sm">
+              Playing: {selectedCountry} only
+            </p>
+          )}
+        </div>
+
         {/* Play Buttons */}
         <div className="space-y-3">
           <button
-            onClick={() => navigate(`/categories?difficulty=${difficulty}`)}
+            onClick={() => navigate(`/categories?difficulty=${difficulty}${selectedCountry ? `&country=${selectedCountry}` : ''}`)}
             className="w-full btn-gold text-xl py-4 flex items-center justify-center gap-2"
           >
-            ▶ PLAY NOW
+            ▶ PLAY NOW {selectedCountry && `(${selectedCountry})`}
           </button>
           <button
             onClick={() => navigate('/multiplayer')}
@@ -184,34 +182,6 @@ function HomePage() {
             ⚡💪🏾 BATTLE A FRIEND
           </button>
         </div>
-
-        {/* Today's Headline */}
-        {newsLoading ? (
-          <div className="glass-card p-3 border-l-4 border-red-500">
-            <div className="h-4 bg-white/10 rounded animate-pulse"></div>
-          </div>
-        ) : headline && (
-          <div
-            className="glass-card p-3 border-l-4 border-red-500 cursor-pointer transition-all"
-            onClick={() => setNewsExpanded(!newsExpanded)}
-          >
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="text-red-400 text-xs font-bold">NEWS:</span>
-                <h3 className="text-white text-sm font-medium truncate">{headline.headline}</h3>
-              </div>
-              <span className="text-gray-500 text-xs flex-shrink-0">{newsExpanded ? '▲' : '▼'}</span>
-            </div>
-            {newsExpanded && (
-              <div className="mt-3 pt-3 border-t border-white/10">
-                <p className="text-gray-400 text-sm mb-3">{headline.summary}</p>
-                <p className="text-gray-500 text-xs">
-                  {headline.source} • {headline.publishedAt && new Date(headline.publishedAt).toLocaleDateString()}
-                </p>
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">

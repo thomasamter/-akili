@@ -74,9 +74,10 @@ const GamePage = () => {
     coins,
   } = usePlayerStore()
 
-  // Get category and difficulty from URL params
+  // Get category, difficulty, and country from URL params
   const categoryId = searchParams.get('category') || 'random'
   const difficulty = searchParams.get('difficulty') || 'medium'
+  const country = searchParams.get('country') || null
   const isWeeklyQuiz = searchParams.get('type') === 'weekly'
 
   // Get category info
@@ -85,7 +86,7 @@ const GamePage = () => {
   // Initialize game
   useEffect(() => {
     initializeGame()
-  }, [categoryId, difficulty, isWeeklyQuiz])
+  }, [categoryId, difficulty, country, isWeeklyQuiz])
 
   // Show achievement modals when new achievements are unlocked
   useEffect(() => {
@@ -109,16 +110,20 @@ const GamePage = () => {
       selectedQuestions = weeklyQuiz?.questions || []
     } else if (categoryId && categoryId !== 'random') {
       // Use the new function that avoids recently used questions
-      selectedQuestions = getRandomFromCategory(categoryId, QUESTIONS_PER_GAME, difficulty)
+      selectedQuestions = getRandomFromCategory(categoryId, QUESTIONS_PER_GAME, difficulty, country)
     } else {
       // Random mix from all categories, avoiding repeats
-      selectedQuestions = getRandomQuestions(QUESTIONS_PER_GAME, difficulty)
+      selectedQuestions = getRandomQuestions(QUESTIONS_PER_GAME, difficulty, country)
     }
 
     // Fallback if not enough questions
     if (selectedQuestions.length < QUESTIONS_PER_GAME) {
       const remaining = QUESTIONS_PER_GAME - selectedQuestions.length
-      const moreQuestions = getRandomQuestions(remaining, difficulty)
+      // First try with country filter, then without if still not enough
+      let moreQuestions = getRandomQuestions(remaining, difficulty, country)
+      if (moreQuestions.length < remaining) {
+        moreQuestions = getRandomQuestions(remaining, difficulty, null)
+      }
       selectedQuestions = [...selectedQuestions, ...moreQuestions]
     }
 

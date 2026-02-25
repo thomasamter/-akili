@@ -104,15 +104,22 @@ const MultiplayerPage = () => {
     return () => clearInterval(timer)
   }, [screen, showResult, currentQuestionIndex])
 
+  // Loading state
+  const [isCreating, setIsCreating] = useState(false)
+
   // Create a new room
   const handleCreateRoom = async () => {
-    setError('Creating room...')
+    if (isCreating) return
+
+    setIsCreating(true)
+    setError('')
 
     try {
       const questions = getRandomQuestions(QUESTIONS_PER_GAME, difficulty)
 
       if (!questions || questions.length === 0) {
-        setError('Error: No questions found')
+        setError('No questions found for this difficulty')
+        setIsCreating(false)
         return
       }
 
@@ -124,21 +131,26 @@ const MultiplayerPage = () => {
       )
 
       if (createError) {
-        setError('Error: ' + createError)
+        setError(createError)
+        setIsCreating(false)
         return
       }
 
       if (!newCode) {
-        setError('Failed to create room')
+        setError('Failed to create room - try again')
+        setIsCreating(false)
         return
       }
 
+      setError('')
       setRoomCode(newCode)
       setIsHost(true)
       setScreen('lobby')
     } catch (err) {
-      setError('Error: ' + err.message)
+      setError(err.message || 'Something went wrong')
       console.error('Create room error:', err)
+    } finally {
+      setIsCreating(false)
     }
   }
 
@@ -280,13 +292,14 @@ const MultiplayerPage = () => {
           <div className="w-full max-w-sm space-y-4">
             <button
               onClick={handleCreateRoom}
-              className="w-full py-4 bg-akili-gold text-akili-black font-bold text-lg rounded-xl hover:bg-akili-gold/90 transition-colors"
+              disabled={isCreating}
+              className="w-full py-4 bg-akili-gold text-akili-black font-bold text-lg rounded-xl hover:bg-akili-gold/90 transition-colors disabled:opacity-70"
               style={{
                 border: '3px solid #FFD700',
                 boxShadow: '0 0 15px rgba(253, 185, 19, 0.5)'
               }}
             >
-              Create Game
+              {isCreating ? 'Creating...' : 'Create Game'}
             </button>
 
             <div className="flex items-center gap-4">

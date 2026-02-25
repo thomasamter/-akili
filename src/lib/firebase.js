@@ -347,17 +347,22 @@ const generateRoomCode = () => {
   return Math.random().toString(36).substring(2, 8).toUpperCase()
 }
 
-// Create a new multiplayer game room
+// Create a new multiplayer game room with timeout
 export const createGameRoom = async (hostId, hostName, questions, difficulty = 'medium') => {
   if (!db) {
-    return { roomCode: null, error: 'Database not configured' }
+    return { roomCode: null, error: 'Database not configured. Please check Firebase setup.' }
   }
 
   const roomCode = generateRoomCode()
 
+  // Create a timeout promise
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error('Connection timeout - check your internet connection')), 8000)
+  })
+
   try {
     const roomRef = doc(db, 'rooms', roomCode)
-    await setDoc(roomRef, {
+    const writePromise = setDoc(roomRef, {
       host: {
         id: hostId,
         name: hostName,
@@ -376,10 +381,20 @@ export const createGameRoom = async (hostId, hostName, questions, difficulty = '
       gameStartTime: null,
     })
 
+    // Race between write and timeout
+    await Promise.race([writePromise, timeoutPromise])
+
     return { roomCode, error: null }
   } catch (error) {
     console.error('Firebase write error:', error)
-    return { roomCode: null, error: error.message }
+    // Provide more helpful error messages
+    let errorMessage = error.message
+    if (error.code === 'permission-denied') {
+      errorMessage = 'Permission denied - check Firestore rules'
+    } else if (error.message.includes('timeout')) {
+      errorMessage = 'Connection timeout - please try again'
+    }
+    return { roomCode: null, error: errorMessage }
   }
 }
 
