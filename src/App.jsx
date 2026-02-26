@@ -144,7 +144,7 @@ function HomePage() {
               { id: 'Ethiopia', flag: '🇪🇹', name: 'Ethiopia' },
               { id: 'Egypt', flag: '🇪🇬', name: 'Egypt' },
               { id: 'Tanzania', flag: '🇹🇿', name: 'Tanzania' },
-              { id: 'Rwanda', flag: '🇷🇼', name: 'Rwanda' },
+              { id: 'Senegal', flag: '🇸🇳', name: 'Senegal' },
             ].map((country) => (
               <button
                 key={country.id}
