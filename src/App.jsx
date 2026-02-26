@@ -167,6 +167,34 @@ function HomePage() {
           )}
         </div>
 
+        {/* Quick Categories */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">Quick Play</h3>
+            <button onClick={() => navigate('/categories')} className="text-akili-gold text-sm">
+              See All →
+            </button>
+          </div>
+          <div className="grid grid-cols-4 gap-2">
+            <button onClick={() => handlePlay('history')} className="glass-card p-3 text-center hover:border-akili-gold/50">
+              <span className="text-2xl block">📜</span>
+              <span className="text-white text-xs">History</span>
+            </button>
+            <button onClick={() => handlePlay('tribes')} className="glass-card p-3 text-center hover:border-akili-gold/50">
+              <span className="text-2xl block">👥</span>
+              <span className="text-white text-xs">People</span>
+            </button>
+            <button onClick={() => handlePlay('traditions')} className="glass-card p-3 text-center hover:border-akili-gold/50">
+              <span className="text-2xl block">🪘</span>
+              <span className="text-white text-xs">Traditions</span>
+            </button>
+            <button onClick={() => handlePlay('music')} className="glass-card p-3 text-center hover:border-akili-gold/50">
+              <span className="text-2xl block">🎵</span>
+              <span className="text-white text-xs">Music</span>
+            </button>
+          </div>
+        </div>
+
         {/* Play Buttons */}
         <div className="space-y-3">
           <button
@@ -199,34 +227,6 @@ function HomePage() {
             <p className="text-2xl">🏆</p>
             <p className="text-lg font-bold text-white">{xp}</p>
             <p className="text-xs text-gray-500">Total XP</p>
-          </div>
-        </div>
-
-        {/* Quick Categories */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">Quick Play</h3>
-            <button onClick={() => navigate('/categories')} className="text-akili-gold text-sm">
-              See All →
-            </button>
-          </div>
-          <div className="grid grid-cols-4 gap-2">
-            <button onClick={() => handlePlay('history')} className="glass-card p-3 text-center hover:border-akili-gold/50">
-              <span className="text-2xl block">📜</span>
-              <span className="text-white text-xs">History</span>
-            </button>
-            <button onClick={() => handlePlay('tribes')} className="glass-card p-3 text-center hover:border-akili-gold/50">
-              <span className="text-2xl block">👥</span>
-              <span className="text-white text-xs">People</span>
-            </button>
-            <button onClick={() => handlePlay('traditions')} className="glass-card p-3 text-center hover:border-akili-gold/50">
-              <span className="text-2xl block">🪘</span>
-              <span className="text-white text-xs">Traditions</span>
-            </button>
-            <button onClick={() => handlePlay('music')} className="glass-card p-3 text-center hover:border-akili-gold/50">
-              <span className="text-2xl block">🎵</span>
-              <span className="text-white text-xs">Music</span>
-            </button>
           </div>
         </div>
 
