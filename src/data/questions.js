@@ -10827,13 +10827,16 @@ export const getQuestionsByDifficulty = (difficulty) => {
   return questions.filter(q => q.difficulty === difficulty)
 }
 
+// Configuration for question rotation
+const RECENTLY_USED_LIMIT = 600 // Track last 600 questions (~60 games worth)
+const RECENTLYUSED_KEY = 'akili_recently_used_questions'
+
 // Get random questions with optional difficulty and country filter, avoiding recently used
 export const getRandomQuestions = (count = 10, difficulty = null, country = null) => {
   // Get recently used question IDs from localStorage
-  const recentlyUsedKey = 'akili_recently_used_questions'
   let recentlyUsed = []
   try {
-    const stored = localStorage.getItem(recentlyUsedKey)
+    const stored = localStorage.getItem(RECENTLYUSED_KEY)
     if (stored) {
       recentlyUsed = JSON.parse(stored)
     }
@@ -10859,10 +10862,18 @@ export const getRandomQuestions = (count = 10, difficulty = null, country = null
     }
   }
 
-  // Filter out recently used questions
-  let availableQuestions = filtered.filter(q => !recentlyUsed.includes(q.id))
+  // Split into never-seen, old (seen but not recent), and recent questions
+  const neverSeen = filtered.filter(q => !recentlyUsed.includes(q.id))
+  const oldQuestions = filtered.filter(q => {
+    const idx = recentlyUsed.indexOf(q.id)
+    return idx > RECENTLY_USED_LIMIT / 2 // Only use if in older half of history
+  })
 
-  // If not enough questions available, reset and use all
+  // Prioritize never-seen questions, then old questions
+  let availableQuestions = neverSeen.length >= count ? neverSeen :
+                           [...neverSeen, ...oldQuestions]
+
+  // If still not enough, use all filtered questions
   if (availableQuestions.length < count) {
     availableQuestions = filtered
   }
@@ -10876,11 +10887,11 @@ export const getRandomQuestions = (count = 10, difficulty = null, country = null
 
   const selectedQuestions = shuffled.slice(0, count)
 
-  // Update recently used - store up to 200 question IDs
+  // Update recently used - store up to RECENTLY_USED_LIMIT question IDs
   const selectedIds = selectedQuestions.map(q => q.id)
-  const newRecentlyUsed = [...selectedIds, ...recentlyUsed].slice(0, 200)
+  const newRecentlyUsed = [...selectedIds, ...recentlyUsed].slice(0, RECENTLY_USED_LIMIT)
   try {
-    localStorage.setItem(recentlyUsedKey, JSON.stringify(newRecentlyUsed))
+    localStorage.setItem(RECENTLYUSED_KEY, JSON.stringify(newRecentlyUsed))
   } catch (e) {
     // Ignore localStorage errors
   }
@@ -10891,10 +10902,9 @@ export const getRandomQuestions = (count = 10, difficulty = null, country = null
 // Get random questions from a specific category, avoiding recently used questions
 export const getRandomFromCategory = (categoryId, count = 10, difficulty = null, country = null) => {
   // Get recently used question IDs from localStorage
-  const recentlyUsedKey = 'akili_recently_used_questions'
   let recentlyUsed = []
   try {
-    const stored = localStorage.getItem(recentlyUsedKey)
+    const stored = localStorage.getItem(RECENTLYUSED_KEY)
     if (stored) {
       recentlyUsed = JSON.parse(stored)
     }
@@ -10921,10 +10931,18 @@ export const getRandomFromCategory = (categoryId, count = 10, difficulty = null,
     }
   }
 
-  // Filter out recently used questions
-  let availableQuestions = categoryQuestions.filter(q => !recentlyUsed.includes(q.id))
+  // Split into never-seen, old (seen but not recent), and recent questions
+  const neverSeen = categoryQuestions.filter(q => !recentlyUsed.includes(q.id))
+  const oldQuestions = categoryQuestions.filter(q => {
+    const idx = recentlyUsed.indexOf(q.id)
+    return idx > RECENTLY_USED_LIMIT / 2 // Only use if in older half of history
+  })
 
-  // If not enough questions available, reset and use all
+  // Prioritize never-seen questions, then old questions
+  let availableQuestions = neverSeen.length >= count ? neverSeen :
+                           [...neverSeen, ...oldQuestions]
+
+  // If still not enough, use all category questions
   if (availableQuestions.length < count) {
     availableQuestions = categoryQuestions
   }
@@ -10939,11 +10957,11 @@ export const getRandomFromCategory = (categoryId, count = 10, difficulty = null,
   // Get the questions
   const selectedQuestions = shuffled.slice(0, count)
 
-  // Update recently used - store up to 200 question IDs
+  // Update recently used - store up to RECENTLY_USED_LIMIT question IDs
   const selectedIds = selectedQuestions.map(q => q.id)
-  const newRecentlyUsed = [...selectedIds, ...recentlyUsed].slice(0, 200)
+  const newRecentlyUsed = [...selectedIds, ...recentlyUsed].slice(0, RECENTLY_USED_LIMIT)
   try {
-    localStorage.setItem(recentlyUsedKey, JSON.stringify(newRecentlyUsed))
+    localStorage.setItem(RECENTLYUSED_KEY, JSON.stringify(newRecentlyUsed))
   } catch (e) {
     // Ignore localStorage errors
   }
