@@ -50,7 +50,7 @@ function HomePage() {
       alert('Out of lives! Wait for regeneration or go Premium.')
       return
     }
-    navigate(`/play?category=${category}&difficulty=${difficulty}`)
+    navigate(`/play?category=${category}&difficulty=${difficulty}${selectedCountry ? `&country=${selectedCountry}` : ''}`)
   }
 
   return (
