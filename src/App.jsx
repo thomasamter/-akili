@@ -1,16 +1,28 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
 import { useGameStore, usePlayerStore, useAuthStore } from './lib/store'
 import { onAuthChange, logOut } from './lib/firebase'
-import GamePage from './pages/GamePage'
-import CategoryPage from './pages/CategoryPage'
-import AchievementsPage from './pages/AchievementsPage'
-import LoginPage from './pages/LoginPage'
-import SignupPage from './pages/SignupPage'
-import PremiumPage from './pages/PremiumPage'
-import LeaguePage from './pages/LeaguePage'
-import ForgotPasswordPage from './pages/ForgotPasswordPage'
-import MultiplayerPage from './pages/MultiplayerPage'
+
+// Lazy load pages for better performance (code splitting)
+const GamePage = lazy(() => import('./pages/GamePage'))
+const CategoryPage = lazy(() => import('./pages/CategoryPage'))
+const AchievementsPage = lazy(() => import('./pages/AchievementsPage'))
+const LoginPage = lazy(() => import('./pages/LoginPage'))
+const SignupPage = lazy(() => import('./pages/SignupPage'))
+const PremiumPage = lazy(() => import('./pages/PremiumPage'))
+const LeaguePage = lazy(() => import('./pages/LeaguePage'))
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'))
+const MultiplayerPage = lazy(() => import('./pages/MultiplayerPage'))
+
+// Loading spinner for lazy loaded components
+const PageLoader = () => (
+  <div className="min-h-screen bg-akili-black flex items-center justify-center">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-akili-gold mx-auto mb-4"></div>
+      <p className="text-gray-400">Loading...</p>
+    </div>
+  </div>
+)
 
 // Working HomePage with core features
 function HomePage() {
@@ -273,18 +285,20 @@ function HomePage() {
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/categories" element={<CategoryPage />} />
-        <Route path="/play" element={<GamePage />} />
-        <Route path="/achievements" element={<AchievementsPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/premium" element={<PremiumPage />} />
-        <Route path="/league" element={<LeaguePage />} />
-        <Route path="/multiplayer" element={<MultiplayerPage />} />
-      </Routes>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/categories" element={<CategoryPage />} />
+          <Route path="/play" element={<GamePage />} />
+          <Route path="/achievements" element={<AchievementsPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/premium" element={<PremiumPage />} />
+          <Route path="/league" element={<LeaguePage />} />
+          <Route path="/multiplayer" element={<MultiplayerPage />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   )
 }

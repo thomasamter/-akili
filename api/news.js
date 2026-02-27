@@ -2,8 +2,17 @@
 // Uses NewsAPI.org to get latest African headlines
 
 export default async function handler(req, res) {
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Origin', '*')
+  // Enable CORS - restrict to allowed origins in production
+  const allowedOrigins = [
+    'https://akili-253a4.web.app',
+    'https://akili-253a4.firebaseapp.com',
+    'http://localhost:5173',
+    'http://localhost:3000',
+  ]
+  const origin = req.headers.origin
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin)
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET')
   res.setHeader('Cache-Control', 's-maxage=1800, stale-while-revalidate') // Cache for 30 mins
 
