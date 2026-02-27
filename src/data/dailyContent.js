@@ -1,57 +1,4 @@
-// AKILI Daily Content - Headlines & Weekly Quizzes
-// Updated regularly with African news and current affairs
-
-// Rotating headlines - shows different ones based on day
-const headlines = [
-  {
-    headline: "AfCFTA Trade Volume Hits Record $1.2 Trillion",
-    summary: "The African Continental Free Trade Area reaches milestone as intra-African trade surges, creating millions of jobs across the continent.",
-    country: "🌍 Africa",
-    category: "Economy",
-  },
-  {
-    headline: "Kenya Launches Africa's Largest Wind Farm",
-    summary: "Lake Turkana Wind Power expansion makes Kenya a renewable energy leader, powering 2 million homes with clean energy.",
-    country: "🇰🇪 Kenya",
-    category: "Technology",
-  },
-  {
-    headline: "Nigeria's Tech Unicorns Top $50 Billion Valuation",
-    summary: "Lagos emerges as Africa's undisputed tech capital with record startup investments and innovation hubs.",
-    country: "🇳🇬 Nigeria",
-    category: "Technology",
-  },
-  {
-    headline: "Rwanda Hosts Africa AI Summit 2026",
-    summary: "African leaders and tech giants gather in Kigali to discuss AI ethics, digital transformation, and homegrown innovation.",
-    country: "🇷🇼 Rwanda",
-    category: "Technology",
-  },
-  {
-    headline: "Ethiopia's Grand Renaissance Dam Reaches Full Capacity",
-    summary: "The largest hydroelectric project in Africa is now fully operational, providing electricity to 60 million people.",
-    country: "🇪🇹 Ethiopia",
-    category: "Infrastructure",
-  },
-  {
-    headline: "South Africa Wins Bid to Host 2034 FIFA World Cup",
-    summary: "Historic decision makes South Africa the first African nation to host a second World Cup after 2010 success.",
-    country: "🇿🇦 South Africa",
-    category: "Sports",
-  },
-  {
-    headline: "Ghana Becomes Africa's Newest Oil Powerhouse",
-    summary: "New offshore discoveries double Ghana's oil reserves, positioning it among Africa's top energy producers.",
-    country: "🇬🇭 Ghana",
-    category: "Energy",
-  },
-]
-
-// Get today's headline (rotates daily)
-export const getTodayHeadline = () => {
-  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24))
-  return headlines[dayOfYear % headlines.length]
-}
+// AKILI Daily Content - Weekly Quizzes & Daily Challenges
 
 // Weekly Current Affairs Quiz
 // Each week features 10 questions about recent African news
@@ -103,14 +50,13 @@ export const weeklyQuizzes = [
         difficulty: "hard",
       },
     ],
-    completedBy: 0, // Track how many users completed
+    completedBy: 0,
     averageScore: 0,
   },
 ]
 
 // Get current week's quiz
 export const getCurrentWeekQuiz = () => {
-  // Return most recent quiz
   return weeklyQuizzes[weeklyQuizzes.length - 1]
 }
 
@@ -131,21 +77,9 @@ export const getTodayChallenge = () => {
   return dailyChallengeSchedule[dayOfWeek]
 }
 
-// News sources for potential API integration
-export const africanNewsSources = [
-  { id: 'bbc-africa', name: 'BBC Africa', domain: 'bbc.com/africa' },
-  { id: 'aljazeera', name: 'Al Jazeera Africa', domain: 'aljazeera.com/africa' },
-  { id: 'the-africa-report', name: 'The Africa Report', domain: 'theafricareport.com' },
-  { id: 'daily-maverick', name: 'Daily Maverick', domain: 'dailymaverick.co.za' },
-  { id: 'nation-africa', name: 'Nation Africa', domain: 'nation.africa' },
-  { id: 'punch-ng', name: 'Punch Nigeria', domain: 'punchng.com' },
-]
-
 export default {
-  headlines,
   weeklyQuizzes,
   dailyChallengeSchedule,
-  getTodayHeadline,
   getCurrentWeekQuiz,
   getTodayChallenge,
 }
