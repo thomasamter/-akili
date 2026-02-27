@@ -144,10 +144,23 @@ function HomePage() {
           </div>
         </div>
 
-        {/* Country Selector */}
+        {/* Country Selector - Swipeable Carousel */}
         <div className="glass-card p-4">
-          <p className="text-xs text-gray-400 uppercase tracking-wider mb-3">Play by Country</p>
-          <div className="grid grid-cols-4 gap-2 mb-3">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs text-gray-400 uppercase tracking-wider">Play by Country</p>
+            {selectedCountry && (
+              <button
+                onClick={() => setSelectedCountry(null)}
+                className="text-xs text-akili-gold"
+              >
+                Clear ✕
+              </button>
+            )}
+          </div>
+          <div
+            className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
+          >
             {[
               { id: 'Nigeria', flag: '🇳🇬', name: 'Nigeria' },
               { id: 'Kenya', flag: '🇰🇪', name: 'Kenya' },
@@ -165,25 +178,25 @@ function HomePage() {
               <button
                 key={country.id}
                 onClick={() => setSelectedCountry(selectedCountry === country.id ? null : country.id)}
-                className={`py-2 px-1 rounded-lg text-center transition-all ${
+                className={`flex-shrink-0 snap-start py-3 px-4 rounded-xl text-center transition-all min-w-[72px] ${
                   selectedCountry === country.id
-                    ? 'bg-akili-gold text-black'
+                    ? 'bg-akili-gold text-black scale-105 shadow-lg shadow-akili-gold/30'
                     : 'bg-white/10 text-gray-400 hover:bg-white/20'
                 }`}
               >
-                <span className="text-lg block">{country.flag}</span>
-                <span className="text-xs">{country.name}</span>
+                <span className="text-2xl block mb-1">{country.flag}</span>
+                <span className="text-xs font-medium">{country.name}</span>
               </button>
             ))}
           </div>
           {selectedCountry && (
-            <p className="text-center text-akili-gold text-sm">
+            <p className="text-center text-akili-gold text-sm mt-2">
               Playing: {selectedCountry} only
             </p>
           )}
         </div>
 
-        {/* Quick Categories */}
+        {/* Quick Categories - Swipeable Carousel */}
         <div>
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">Quick Play</h3>
@@ -191,23 +204,29 @@ function HomePage() {
               See All →
             </button>
           </div>
-          <div className="grid grid-cols-4 gap-2">
-            <button onClick={() => handlePlay('history')} className="glass-card p-3 text-center hover:border-akili-gold/50">
-              <span className="text-2xl block">📜</span>
-              <span className="text-white text-xs">History</span>
-            </button>
-            <button onClick={() => handlePlay('entertainment')} className="glass-card p-3 text-center hover:border-akili-gold/50">
-              <span className="text-2xl block">🎬</span>
-              <span className="text-white text-xs">Entertainment</span>
-            </button>
-            <button onClick={() => handlePlay('culture')} className="glass-card p-3 text-center hover:border-akili-gold/50">
-              <span className="text-2xl block">🎭</span>
-              <span className="text-white text-xs">Culture</span>
-            </button>
-            <button onClick={() => handlePlay('music')} className="glass-card p-3 text-center hover:border-akili-gold/50">
-              <span className="text-2xl block">🎵</span>
-              <span className="text-white text-xs">Music</span>
-            </button>
+          <div
+            className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
+          >
+            {[
+              { id: 'history', icon: '📜', name: 'History', color: 'from-amber-500 to-orange-600' },
+              { id: 'entertainment', icon: '🎬', name: 'Entertainment', color: 'from-orange-500 to-red-600' },
+              { id: 'culture', icon: '🎭', name: 'Culture', color: 'from-yellow-500 to-amber-600' },
+              { id: 'music', icon: '🎵', name: 'Music', color: 'from-purple-500 to-pink-600' },
+              { id: 'sports', icon: '⚽', name: 'Sports', color: 'from-blue-500 to-cyan-600' },
+              { id: 'geography', icon: '🗺️', name: 'Geography', color: 'from-green-500 to-emerald-600' },
+              { id: 'science', icon: '🔬', name: 'Science', color: 'from-cyan-500 to-blue-600' },
+              { id: 'politics', icon: '🏛️', name: 'Politics', color: 'from-pink-500 to-rose-600' },
+            ].map((category) => (
+              <button
+                key={category.id}
+                onClick={() => handlePlay(category.id)}
+                className={`flex-shrink-0 snap-start p-4 rounded-xl text-center min-w-[90px] bg-gradient-to-br ${category.color} hover:scale-105 transition-transform shadow-lg`}
+              >
+                <span className="text-3xl block mb-1">{category.icon}</span>
+                <span className="text-white text-xs font-medium">{category.name}</span>
+              </button>
+            ))}
           </div>
         </div>
 
