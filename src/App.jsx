@@ -184,13 +184,13 @@ function HomePage() {
               <span className="text-2xl block">📜</span>
               <span className="text-white text-xs">History</span>
             </button>
-            <button onClick={() => handlePlay('tribes')} className="glass-card p-3 text-center hover:border-akili-gold/50">
-              <span className="text-2xl block">👥</span>
-              <span className="text-white text-xs">People</span>
+            <button onClick={() => handlePlay('entertainment')} className="glass-card p-3 text-center hover:border-akili-gold/50">
+              <span className="text-2xl block">🎬</span>
+              <span className="text-white text-xs">Entertainment</span>
             </button>
-            <button onClick={() => handlePlay('traditions')} className="glass-card p-3 text-center hover:border-akili-gold/50">
-              <span className="text-2xl block">🪘</span>
-              <span className="text-white text-xs">Traditions</span>
+            <button onClick={() => handlePlay('culture')} className="glass-card p-3 text-center hover:border-akili-gold/50">
+              <span className="text-2xl block">🎭</span>
+              <span className="text-white text-xs">Culture</span>
             </button>
             <button onClick={() => handlePlay('music')} className="glass-card p-3 text-center hover:border-akili-gold/50">
               <span className="text-2xl block">🎵</span>
