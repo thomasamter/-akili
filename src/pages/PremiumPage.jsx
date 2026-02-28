@@ -5,13 +5,14 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Check, Crown, Zap, Heart, Shield, Gift, Star } from 'lucide-react'
-import { premiumFeatures, subscriptionPlans } from '../data/premium'
+import { premiumFeatures, subscriptionPlans, currencySymbols } from '../data/premium'
 import { usePlayerStore } from '../lib/store'
 
 const PremiumPage = () => {
   const navigate = useNavigate()
   const { isPremium } = usePlayerStore()
   const [selectedPlan, setSelectedPlan] = useState('monthly')
+  const [selectedCurrency, setSelectedCurrency] = useState('USD')
 
   const handleSubscribe = (planId) => {
     // In production, this would integrate with Stripe, RevenueCat, or App Store
@@ -127,60 +128,90 @@ const PremiumPage = () => {
             transition={{ delay: 0.2 }}
             className="mb-8"
           >
-            <h3 className="text-lg font-bold text-white mb-4">Choose Your Plan</h3>
-            <div className="space-y-3">
-              {subscriptionPlans.map((plan) => (
-                <motion.button
-                  key={plan.id}
-                  onClick={() => setSelectedPlan(plan.id)}
-                  className={`w-full p-4 rounded-xl border-2 transition-all relative ${
-                    selectedPlan === plan.id
-                      ? 'border-akili-gold bg-akili-gold/10'
-                      : 'border-white/10 bg-white/5 hover:border-white/20'
-                  }`}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  {/* Popular Badge */}
-                  {plan.popular && (
-                    <span className="absolute -top-2 left-4 px-2 py-0.5 bg-akili-gold text-akili-black text-xs font-bold rounded-full">
-                      Most Popular
-                    </span>
-                  )}
-                  {plan.bestValue && (
-                    <span className="absolute -top-2 left-4 px-2 py-0.5 bg-green-500 text-white text-xs font-bold rounded-full">
-                      Best Value
-                    </span>
-                  )}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-white">Choose Your Plan</h3>
+              {/* Currency Selector */}
+              <select
+                value={selectedCurrency}
+                onChange={(e) => setSelectedCurrency(e.target.value)}
+                className="px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-akili-gold"
+              >
+                <option value="USD">🇺🇸 USD</option>
+                <option value="NGN">🇳🇬 NGN</option>
+                <option value="KES">🇰🇪 KES</option>
+                <option value="ZAR">🇿🇦 ZAR</option>
+                <option value="GHS">🇬🇭 GHS</option>
+                <option value="EGP">🇪🇬 EGP</option>
+              </select>
+            </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="text-left">
-                      <h4 className="font-bold text-white">{plan.name}</h4>
-                      <p className="text-white/40 text-sm">{plan.period}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-white">
-                        ${plan.price}
-                      </p>
-                      {plan.savings && (
-                        <p className="text-green-400 text-sm font-medium">
-                          {plan.savings}
+            {/* Affordable pricing note */}
+            <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-xl">
+              <p className="text-green-400 text-sm text-center">
+                💚 Affordable pricing for Africa - Less than the cost of a coffee!
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {subscriptionPlans.map((plan) => {
+                const price = selectedCurrency === 'USD'
+                  ? plan.price
+                  : plan.localPrices?.[selectedCurrency] || plan.price
+                const symbol = currencySymbols[selectedCurrency] || '$'
+
+                return (
+                  <motion.button
+                    key={plan.id}
+                    onClick={() => setSelectedPlan(plan.id)}
+                    className={`w-full p-4 rounded-xl border-2 transition-all relative ${
+                      selectedPlan === plan.id
+                        ? 'border-akili-gold bg-akili-gold/10'
+                        : 'border-white/10 bg-white/5 hover:border-white/20'
+                    }`}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {/* Popular Badge */}
+                    {plan.popular && (
+                      <span className="absolute -top-2 left-4 px-2 py-0.5 bg-akili-gold text-akili-black text-xs font-bold rounded-full">
+                        Most Popular
+                      </span>
+                    )}
+                    {plan.bestValue && (
+                      <span className="absolute -top-2 left-4 px-2 py-0.5 bg-green-500 text-white text-xs font-bold rounded-full">
+                        Best Value
+                      </span>
+                    )}
+
+                    <div className="flex items-center justify-between pr-8">
+                      <div className="text-left">
+                        <h4 className="font-bold text-white">{plan.name}</h4>
+                        <p className="text-white/40 text-sm">{plan.period}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold text-white">
+                          {symbol}{price.toLocaleString()}
                         </p>
+                        {plan.savings && (
+                          <p className="text-green-400 text-sm font-medium">
+                            {plan.savings}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Selection indicator */}
+                    <div className={`absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                      selectedPlan === plan.id
+                        ? 'border-akili-gold bg-akili-gold'
+                        : 'border-white/20'
+                    }`}>
+                      {selectedPlan === plan.id && (
+                        <Check className="w-4 h-4 text-akili-black" />
                       )}
                     </div>
-                  </div>
-
-                  {/* Selection indicator */}
-                  <div className={`absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                    selectedPlan === plan.id
-                      ? 'border-akili-gold bg-akili-gold'
-                      : 'border-white/20'
-                  }`}>
-                    {selectedPlan === plan.id && (
-                      <Check className="w-4 h-4 text-akili-black" />
-                    )}
-                  </div>
-                </motion.button>
-              ))}
+                  </motion.button>
+                )
+              })}
             </div>
 
             {/* Subscribe Button */}

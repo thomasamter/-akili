@@ -13,6 +13,63 @@ export const categories = [
   { id: 'entertainment', name: 'Entertainment', icon: '🎬', color: '#F97316' },
 ]
 
+// Subcategories for niche topic specialization (QuizUp-style)
+export const subcategories = {
+  history: [
+    { id: 'ancient', name: 'Ancient Africa', icon: '🏛️', description: 'Empires, kingdoms & ancient civilizations' },
+    { id: 'colonial', name: 'Colonial Era', icon: '⛓️', description: 'Colonization & resistance movements' },
+    { id: 'independence', name: 'Independence', icon: '🗽', description: 'Liberation movements & heroes' },
+    { id: 'modern', name: 'Modern History', icon: '📅', description: 'Post-independence to today' },
+  ],
+  sports: [
+    { id: 'football', name: 'Football', icon: '⚽', description: 'AFCON, leagues & legends' },
+    { id: 'athletics', name: 'Athletics', icon: '🏃🏾', description: 'Track & field champions' },
+    { id: 'boxing', name: 'Boxing & MMA', icon: '🥊', description: 'Combat sports stars' },
+    { id: 'other_sports', name: 'Other Sports', icon: '🏀', description: 'Basketball, rugby, cricket & more' },
+  ],
+  music: [
+    { id: 'afrobeats', name: 'Afrobeats', icon: '🎧', description: 'Modern African pop music' },
+    { id: 'traditional', name: 'Traditional', icon: '🥁', description: 'Folk & traditional music' },
+    { id: 'gospel', name: 'Gospel', icon: '🙏🏾', description: 'African gospel music' },
+    { id: 'hiphop', name: 'Hip-Hop', icon: '🎤', description: 'African rap & hip-hop' },
+  ],
+  entertainment: [
+    { id: 'nollywood', name: 'Nollywood', icon: '🎬', description: 'Nigerian film industry' },
+    { id: 'tv_shows', name: 'TV Shows', icon: '📺', description: 'African TV series & shows' },
+    { id: 'celebrities', name: 'Celebrities', icon: '⭐', description: 'Famous African personalities' },
+    { id: 'comedy', name: 'Comedy', icon: '😂', description: 'African comedians & humor' },
+  ],
+  geography: [
+    { id: 'capitals', name: 'Capitals & Cities', icon: '🏙️', description: 'Major cities & capitals' },
+    { id: 'landmarks', name: 'Landmarks', icon: '🗿', description: 'Famous places & monuments' },
+    { id: 'nature', name: 'Nature & Wildlife', icon: '🦁', description: 'Parks, animals & nature' },
+    { id: 'borders', name: 'Borders & Maps', icon: '🗺️', description: 'Country borders & regions' },
+  ],
+  culture: [
+    { id: 'food', name: 'Food & Cuisine', icon: '🍲', description: 'African dishes & cooking' },
+    { id: 'languages', name: 'Languages', icon: '💬', description: 'African languages & phrases' },
+    { id: 'traditions', name: 'Traditions', icon: '👘', description: 'Customs & ceremonies' },
+    { id: 'art', name: 'Art & Fashion', icon: '🎨', description: 'African art & fashion' },
+  ],
+  politics: [
+    { id: 'leaders', name: 'Leaders', icon: '👔', description: 'Presidents & prime ministers' },
+    { id: 'organizations', name: 'Organizations', icon: '🏢', description: 'AU, ECOWAS & regional bodies' },
+    { id: 'elections', name: 'Elections', icon: '🗳️', description: 'Electoral history & systems' },
+    { id: 'diplomacy', name: 'Diplomacy', icon: '🤝', description: 'International relations' },
+  ],
+  science: [
+    { id: 'inventions', name: 'Inventions', icon: '💡', description: 'African innovations' },
+    { id: 'scientists', name: 'Scientists', icon: '👨🏾‍🔬', description: 'African researchers & discoveries' },
+    { id: 'technology', name: 'Technology', icon: '📱', description: 'Tech hubs & startups' },
+    { id: 'medicine', name: 'Medicine', icon: '🏥', description: 'Healthcare & medical advances' },
+  ],
+}
+
+// Get subcategories for a category
+export const getSubcategories = (categoryId) => {
+  return subcategories[categoryId] || []
+}
+
 export const questions = [
   // Current Affairs (Updated regularly)
   {

@@ -326,6 +326,62 @@ export const subscribeReactions = (roomCode, callback) => {
 // Quick reactions list
 export const quickReactions = ['👏', '🔥', '😂', '😮', '💪🏾', '🎉', '😤', '🤔']
 
+// Quick chat messages (pre-set for fast gameplay)
+export const quickChatMessages = [
+  { id: 'gg', text: 'Good game!', icon: '🤝' },
+  { id: 'gl', text: 'Good luck!', icon: '🍀' },
+  { id: 'nice', text: 'Nice one!', icon: '👍🏾' },
+  { id: 'wow', text: 'Wow!', icon: '😮' },
+  { id: 'close', text: 'So close!', icon: '😅' },
+  { id: 'rematch', text: 'Rematch?', icon: '🔄' },
+  { id: 'tough', text: 'Tough question!', icon: '🤯' },
+  { id: 'easy', text: 'Too easy!', icon: '😎' },
+]
+
+// ============ IN-GAME CHAT ============
+
+// Send chat message in room
+export const sendChatMessage = async (roomCode, playerId, playerName, message, isQuickChat = false) => {
+  try {
+    const messageRef = push(ref(rtdb, `rooms/${roomCode}/chat`))
+    await set(messageRef, {
+      id: messageRef.key,
+      playerId,
+      playerName,
+      message,
+      isQuickChat,
+      timestamp: serverTimestamp(),
+    })
+    return { success: true }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+// Subscribe to chat messages
+export const subscribeChatMessages = (roomCode, callback) => {
+  const chatRef = query(
+    ref(rtdb, `rooms/${roomCode}/chat`),
+    orderByChild('timestamp'),
+    limitToLast(50)
+  )
+
+  return onValue(chatRef, (snapshot) => {
+    if (snapshot.exists()) {
+      const messages = []
+      snapshot.forEach((child) => {
+        messages.push({
+          id: child.key,
+          ...child.val()
+        })
+      })
+      callback(messages)
+    } else {
+      callback([])
+    }
+  })
+}
+
 // ============ USER PROFILE ============
 
 // Update user profile for searchability

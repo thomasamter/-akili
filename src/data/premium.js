@@ -52,36 +52,69 @@ export const premiumFeatures = [
   },
 ]
 
+// African market pricing (accessible for average income levels)
+// Comparable to Netflix Mobile, Spotify, and popular mobile games in Africa
 export const subscriptionPlans = [
   {
     id: 'weekly',
     name: 'Weekly',
-    price: 2.99,
+    price: 0.99,
     currency: 'USD',
     period: '7 days',
     savings: null,
     popular: false,
+    localPrices: {
+      NGN: 800,    // Nigerian Naira
+      KES: 150,    // Kenyan Shilling
+      ZAR: 18,     // South African Rand
+      GHS: 12,     // Ghanaian Cedi
+      EGP: 30,     // Egyptian Pound
+    },
   },
   {
     id: 'monthly',
     name: 'Monthly',
-    price: 7.99,
+    price: 1.99,
     currency: 'USD',
     period: '30 days',
-    savings: '33% off',
+    savings: '50% off weekly',
     popular: true,
+    localPrices: {
+      NGN: 1500,   // Nigerian Naira
+      KES: 300,    // Kenyan Shilling
+      ZAR: 35,     // South African Rand
+      GHS: 25,     // Ghanaian Cedi
+      EGP: 60,     // Egyptian Pound
+    },
   },
   {
     id: 'yearly',
     name: 'Yearly',
-    price: 49.99,
+    price: 9.99,
     currency: 'USD',
     period: '365 days',
-    savings: '60% off',
+    savings: '75% off',
     popular: false,
     bestValue: true,
+    localPrices: {
+      NGN: 7500,   // Nigerian Naira (~$5 equivalent value)
+      KES: 1500,   // Kenyan Shilling
+      ZAR: 180,    // South African Rand
+      GHS: 120,    // Ghanaian Cedi
+      EGP: 300,    // Egyptian Pound
+    },
   },
 ]
+
+// Currency symbols for display
+export const currencySymbols = {
+  USD: '$',
+  NGN: '₦',
+  KES: 'KSh',
+  ZAR: 'R',
+  GHS: 'GH₵',
+  EGP: 'E£',
+}
 
 // Premium-exclusive power-ups
 export const premiumPowerups = {
