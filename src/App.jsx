@@ -144,6 +144,22 @@ function HomePage() {
           </div>
         </div>
 
+        {/* Play Buttons */}
+        <div className="space-y-3">
+          <button
+            onClick={() => navigate(`/categories?difficulty=${difficulty}${selectedCountry ? `&country=${selectedCountry}` : ''}`)}
+            className="w-full btn-gold text-xl py-4 flex items-center justify-center gap-2"
+          >
+            ▶ PLAY NOW {selectedCountry && `(${selectedCountry})`}
+          </button>
+          <button
+            onClick={() => navigate('/multiplayer')}
+            className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-lg rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+          >
+            ⚡💪🏾 BATTLE A FRIEND
+          </button>
+        </div>
+
         {/* Country Selector - Swipeable Carousel */}
         <div className="glass-card p-4">
           <div className="flex items-center justify-between mb-3">
@@ -162,18 +178,18 @@ function HomePage() {
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
           >
             {[
-              { id: 'Nigeria', flag: '🇳🇬', name: 'Nigeria' },
-              { id: 'Kenya', flag: '🇰🇪', name: 'Kenya' },
-              { id: 'South Africa', flag: '🇿🇦', name: 'S. Africa' },
-              { id: 'Ghana', flag: '🇬🇭', name: 'Ghana' },
-              { id: 'Ethiopia', flag: '🇪🇹', name: 'Ethiopia' },
-              { id: 'Egypt', flag: '🇪🇬', name: 'Egypt' },
-              { id: 'Tanzania', flag: '🇹🇿', name: 'Tanzania' },
-              { id: 'Senegal', flag: '🇸🇳', name: 'Senegal' },
-              { id: 'DR Congo', flag: '🇨🇩', name: 'DRC' },
-              { id: 'Uganda', flag: '🇺🇬', name: 'Uganda' },
-              { id: 'Zimbabwe', flag: '🇿🇼', name: 'Zimbabwe' },
-              { id: 'Sudan', flag: '🇸🇩', name: 'Sudan' },
+              { id: 'Nigeria', flag: '🇳🇬', name: 'Nigeria', color: 'from-green-600 to-green-800' },
+              { id: 'Kenya', flag: '🇰🇪', name: 'Kenya', color: 'from-red-600 to-black' },
+              { id: 'South Africa', flag: '🇿🇦', name: 'S. Africa', color: 'from-green-500 to-yellow-500' },
+              { id: 'Ghana', flag: '🇬🇭', name: 'Ghana', color: 'from-red-500 to-yellow-500' },
+              { id: 'Ethiopia', flag: '🇪🇹', name: 'Ethiopia', color: 'from-green-500 to-red-500' },
+              { id: 'Egypt', flag: '🇪🇬', name: 'Egypt', color: 'from-red-600 to-amber-600' },
+              { id: 'Tanzania', flag: '🇹🇿', name: 'Tanzania', color: 'from-blue-500 to-green-500' },
+              { id: 'Senegal', flag: '🇸🇳', name: 'Senegal', color: 'from-green-500 to-red-500' },
+              { id: 'DR Congo', flag: '🇨🇩', name: 'DRC', color: 'from-blue-600 to-yellow-500' },
+              { id: 'Uganda', flag: '🇺🇬', name: 'Uganda', color: 'from-black to-red-500' },
+              { id: 'Zimbabwe', flag: '🇿🇼', name: 'Zimbabwe', color: 'from-green-600 to-yellow-400' },
+              { id: 'Sudan', flag: '🇸🇩', name: 'Sudan', color: 'from-red-600 to-green-600' },
             ].map((country) => (
               <button
                 key={country.id}
@@ -181,7 +197,7 @@ function HomePage() {
                 className={`flex-shrink-0 snap-start py-3 px-4 rounded-xl text-center transition-all min-w-[72px] ${
                   selectedCountry === country.id
                     ? 'bg-akili-gold text-black scale-105 shadow-lg shadow-akili-gold/30'
-                    : 'bg-white/10 text-gray-400 hover:bg-white/20'
+                    : `bg-gradient-to-br ${country.color} text-white hover:scale-105 shadow-md`
                 }`}
               >
                 <span className="text-2xl block mb-1">{country.flag}</span>
@@ -228,22 +244,6 @@ function HomePage() {
               </button>
             ))}
           </div>
-        </div>
-
-        {/* Play Buttons */}
-        <div className="space-y-3">
-          <button
-            onClick={() => navigate(`/categories?difficulty=${difficulty}${selectedCountry ? `&country=${selectedCountry}` : ''}`)}
-            className="w-full btn-gold text-xl py-4 flex items-center justify-center gap-2"
-          >
-            ▶ PLAY NOW {selectedCountry && `(${selectedCountry})`}
-          </button>
-          <button
-            onClick={() => navigate('/multiplayer')}
-            className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-lg rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-          >
-            ⚡💪🏾 BATTLE A FRIEND
-          </button>
         </div>
 
         {/* Stats */}
