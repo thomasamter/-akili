@@ -179,25 +179,26 @@ function HomePage() {
           ⚡ BATTLE A FRIEND
         </button>
 
-        {/* Quick Settings Row */}
-        <div className="flex gap-2">
-          {/* Difficulty Pills */}
-          <div className="flex-1 flex gap-1 p-1 bg-white/5 rounded-xl">
+        {/* Difficulty Selector */}
+        <div className="glass-card p-4">
+          <p className="text-xs text-gray-400 uppercase tracking-wider mb-3 text-center">Select Difficulty</p>
+          <div className="grid grid-cols-3 gap-3">
             {[
-              { id: 'easy', label: '🍃', color: 'bg-green-500' },
-              { id: 'medium', label: '⚡', color: 'bg-yellow-500' },
-              { id: 'hard', label: '🔥', color: 'bg-red-500' },
+              { id: 'easy', label: 'Easy', icon: '🍃', color: 'bg-green-500', ring: 'ring-green-500' },
+              { id: 'medium', label: 'Medium', icon: '⚡', color: 'bg-yellow-500', ring: 'ring-yellow-500' },
+              { id: 'hard', label: 'Hard', icon: '🔥', color: 'bg-red-500', ring: 'ring-red-500' },
             ].map((d) => (
               <button
                 key={d.id}
                 onClick={() => setDifficulty(d.id)}
-                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`py-4 px-3 rounded-xl text-center transition-all ${
                   difficulty === d.id
-                    ? `${d.color} text-black shadow-md`
-                    : 'text-gray-400 hover:text-white'
+                    ? `${d.color} text-black shadow-lg ring-2 ${d.ring} ring-offset-2 ring-offset-akili-black scale-105`
+                    : 'bg-white/10 text-gray-300 hover:bg-white/20'
                 }`}
               >
-                {d.label}
+                <span className="text-3xl block mb-1">{d.icon}</span>
+                <span className="text-sm font-bold">{d.label}</span>
               </button>
             ))}
           </div>
