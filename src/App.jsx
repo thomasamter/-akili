@@ -13,6 +13,7 @@ const PremiumPage = lazy(() => import('./pages/PremiumPage'))
 const LeaguePage = lazy(() => import('./pages/LeaguePage'))
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'))
 const MultiplayerPage = lazy(() => import('./pages/MultiplayerPage'))
+const SocialPage = lazy(() => import('./pages/SocialPage'))
 
 // Loading spinner for lazy loaded components
 const PageLoader = () => (
@@ -296,14 +297,18 @@ function HomePage() {
         </div>
 
         {/* Bottom Nav */}
-        <div className="grid grid-cols-4 gap-2">
-          <button onClick={() => navigate('/achievements')} className="p-3 bg-white/5 rounded-xl text-center hover:bg-white/10 transition-colors">
-            <span className="text-xl block mb-1">🏅</span>
-            <span className="text-[10px] text-gray-400">Awards</span>
+        <div className="grid grid-cols-5 gap-2">
+          <button onClick={() => navigate('/social')} className="p-3 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-xl text-center hover:from-purple-500/30 hover:to-pink-500/30 transition-colors">
+            <span className="text-xl block mb-1">👥</span>
+            <span className="text-[10px] text-purple-300">Friends</span>
           </button>
           <button onClick={() => navigate('/league')} className="p-3 bg-white/5 rounded-xl text-center hover:bg-white/10 transition-colors">
             <span className="text-xl block mb-1">👑</span>
             <span className="text-[10px] text-gray-400">League</span>
+          </button>
+          <button onClick={() => navigate('/achievements')} className="p-3 bg-white/5 rounded-xl text-center hover:bg-white/10 transition-colors">
+            <span className="text-xl block mb-1">🏅</span>
+            <span className="text-[10px] text-gray-400">Awards</span>
           </button>
           <button onClick={() => navigate('/premium')} className="p-3 bg-white/5 rounded-xl text-center hover:bg-white/10 transition-colors">
             <span className="text-xl block mb-1">💎</span>
@@ -341,6 +346,7 @@ function App() {
           <Route path="/premium" element={<PremiumPage />} />
           <Route path="/league" element={<LeaguePage />} />
           <Route path="/multiplayer" element={<MultiplayerPage />} />
+          <Route path="/social" element={<SocialPage />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

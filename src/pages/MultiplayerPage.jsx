@@ -15,6 +15,7 @@ import {
   endMultiplayerGame,
   leaveRoom,
 } from '../lib/firebase'
+import { sendReaction, subscribeReactions, quickReactions } from '../lib/social'
 
 const QUESTIONS_PER_GAME = 10
 const TIME_PER_QUESTION = 15
@@ -39,6 +40,8 @@ const MultiplayerPage = () => {
   const [selectedAnswer, setSelectedAnswer] = useState(null)
   const [showResult, setShowResult] = useState(false)
   const [countdown, setCountdown] = useState(3)
+  const [reactions, setReactions] = useState({})
+  const [showReactions, setShowReactions] = useState(false)
 
   // Get player name
   const playerName = user?.displayName || 'Guest'
@@ -67,8 +70,22 @@ const MultiplayerPage = () => {
       }
     })
 
-    return () => unsubscribe()
+    // Subscribe to reactions
+    const unsubReactions = subscribeReactions(roomCode, setReactions)
+
+    return () => {
+      unsubscribe()
+      unsubReactions()
+    }
   }, [roomCode, screen])
+
+  // Handle sending reaction
+  const handleSendReaction = async (emoji) => {
+    if (roomCode) {
+      await sendReaction(roomCode, playerId, emoji)
+      setShowReactions(false)
+    }
+  }
 
   // Countdown timer
   useEffect(() => {
@@ -427,6 +444,11 @@ const MultiplayerPage = () => {
     )
   }
 
+  // Get opponent's reaction
+  const opponentId = isHost ? roomData?.guest?.id : roomData?.host?.id
+  const opponentReaction = opponentId ? reactions[opponentId]?.reaction : null
+  const myReaction = reactions[playerId]?.reaction
+
   // Render playing screen
   if (screen === 'playing' && currentQuestion) {
     return (
@@ -435,9 +457,22 @@ const MultiplayerPage = () => {
         <header className="p-4 border-b border-white/10">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             {/* My score */}
-            <div className="text-center">
+            <div className="text-center relative">
               <p className="text-white font-bold text-xl">{myScore}</p>
               <p className="text-white/60 text-xs">{isHost ? 'You' : playerName}</p>
+              {/* My reaction bubble */}
+              <AnimatePresence>
+                {myReaction && (
+                  <motion.div
+                    initial={{ scale: 0, y: 10 }}
+                    animate={{ scale: 1, y: 0 }}
+                    exit={{ scale: 0 }}
+                    className="absolute -top-8 left-1/2 -translate-x-1/2 text-2xl"
+                  >
+                    {myReaction}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Timer */}
@@ -448,9 +483,22 @@ const MultiplayerPage = () => {
             </div>
 
             {/* Opponent score */}
-            <div className="text-center">
+            <div className="text-center relative">
               <p className="text-white font-bold text-xl">{opponentScore}</p>
               <p className="text-white/60 text-xs">{opponent?.name || 'Opponent'}</p>
+              {/* Opponent reaction bubble */}
+              <AnimatePresence>
+                {opponentReaction && (
+                  <motion.div
+                    initial={{ scale: 0, y: 10 }}
+                    animate={{ scale: 1, y: 0 }}
+                    exit={{ scale: 0 }}
+                    className="absolute -top-8 left-1/2 -translate-x-1/2 text-2xl"
+                  >
+                    {opponentReaction}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 
@@ -511,6 +559,45 @@ const MultiplayerPage = () => {
               })}
             </div>
           </motion.div>
+
+          {/* Quick Reactions Bar */}
+          <div className="mt-4">
+            <AnimatePresence>
+              {showReactions ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  className="flex gap-2 justify-center flex-wrap"
+                >
+                  {quickReactions.map((emoji) => (
+                    <button
+                      key={emoji}
+                      onClick={() => handleSendReaction(emoji)}
+                      className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-2xl hover:bg-white/20 transition-colors"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setShowReactions(false)}
+                    className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center text-xl text-red-400"
+                  >
+                    ✕
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.button
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  onClick={() => setShowReactions(true)}
+                  className="w-full py-2 bg-white/5 rounded-xl text-gray-400 text-sm flex items-center justify-center gap-2 hover:bg-white/10 transition-colors"
+                >
+                  <span>😀</span> Send Reaction
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </div>
         </main>
       </div>
     )
