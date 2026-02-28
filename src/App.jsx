@@ -29,9 +29,25 @@ function HomePage() {
   const navigate = useNavigate()
   const { streak, highScore } = useGameStore()
   const { coins, xp, lives, isPremium } = usePlayerStore()
+
+  // Calculate level from XP (100 XP per level)
+  const level = Math.floor(xp / 100) + 1
   const { isAuthenticated, user, login, logout } = useAuthStore()
   const [difficulty, setDifficulty] = useState('medium')
   const [selectedCountry, setSelectedCountry] = useState(null)
+
+  // Calculate level progress (100 XP per level)
+  const xpInCurrentLevel = xp % 100
+  const xpProgress = xpInCurrentLevel
+
+  // Get today's daily challenge info
+  const today = new Date()
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  const dailyCategories = ['current_affairs', 'history', 'geography', 'culture', 'sports', 'music', 'politics']
+  const dailyIcons = ['📰', '📜', '🗺️', '🎭', '⚽', '🎵', '🏛️']
+  const todayCategory = dailyCategories[today.getDay()]
+  const todayIcon = dailyIcons[today.getDay()]
+  const todayCategoryName = todayCategory.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
 
 
   // Listen for Firebase auth state changes
@@ -70,231 +86,240 @@ function HomePage() {
       {/* Header */}
       <nav className="sticky top-0 z-40 backdrop-blur-lg bg-akili-black/80 border-b border-white/5">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🧠</span>
-            <span className="text-xl font-bold text-akili-gold">AKILI</span>
+          <div className="flex items-center gap-3">
+            {/* Level Progress Ring */}
+            <div className="relative w-11 h-11">
+              <svg className="w-11 h-11 -rotate-90">
+                <circle cx="22" cy="22" r="18" stroke="rgba(255,255,255,0.1)" strokeWidth="3" fill="none" />
+                <circle
+                  cx="22" cy="22" r="18"
+                  stroke="#FDB913"
+                  strokeWidth="3"
+                  fill="none"
+                  strokeDasharray={`${xpProgress * 1.13} 113`}
+                  strokeLinecap="round"
+                />
+              </svg>
+              <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-akili-gold">
+                {level || 1}
+              </span>
+            </div>
+            <div>
+              <span className="text-lg font-bold text-akili-gold">AKILI</span>
+              {isAuthenticated && (
+                <p className="text-xs text-gray-400 truncate max-w-[100px]">
+                  {user?.displayName?.split(' ')[0] || 'Player'}
+                </p>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-2">
-            {isAuthenticated && (
-              <div className="flex items-center gap-1 bg-green-500/20 px-3 py-1.5 rounded-full">
-                <span>✓</span>
-                <span className="text-green-400 font-bold text-sm truncate max-w-[80px]">
-                  {user?.displayName?.split(' ')[0] || 'User'}
-                </span>
+            {/* Streak */}
+            {streak > 0 && (
+              <div className="flex items-center gap-1 bg-orange-500/20 px-2.5 py-1.5 rounded-full">
+                <span className="text-sm">🔥</span>
+                <span className="text-orange-400 font-bold text-sm">{streak}</span>
               </div>
             )}
-            <button onClick={() => navigate('/premium')} className="flex items-center gap-1 bg-akili-gold/20 px-3 py-1.5 rounded-full">
-              <span>🪙</span>
-              <span className="text-akili-gold font-bold">{coins}</span>
+            <button onClick={() => navigate('/premium')} className="flex items-center gap-1 bg-akili-gold/20 px-2.5 py-1.5 rounded-full">
+              <span className="text-sm">🪙</span>
+              <span className="text-akili-gold font-bold text-sm">{coins}</span>
             </button>
-            <div className="flex items-center gap-1 bg-red-500/20 px-3 py-1.5 rounded-full">
-              <span>❤️</span>
-              <span className="text-red-400 font-bold">{isPremium ? '∞' : lives}</span>
+            <div className="flex items-center gap-1 bg-red-500/20 px-2.5 py-1.5 rounded-full">
+              <span className="text-sm">❤️</span>
+              <span className="text-red-400 font-bold text-sm">{isPremium ? '∞' : lives}</span>
             </div>
           </div>
         </div>
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
-        {/* Welcome */}
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            {isAuthenticated && user?.displayName
-              ? `Welcome, ${user.displayName}!`
-              : 'Welcome to AKILI!'}
-          </h1>
-          <p className="text-gray-400">Test your African knowledge</p>
-        </div>
+      <main className="max-w-lg mx-auto px-4 py-5 space-y-5">
 
-        {/* Difficulty Selector */}
-        <div className="glass-card p-4">
-          <p className="text-xs text-gray-400 uppercase tracking-wider mb-3">Select Difficulty</p>
-          <div className="grid grid-cols-3 gap-2">
+        {/* Hero Play Section */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-akili-gold/20 via-akili-black to-akili-gold/10 p-6 border border-akili-gold/20">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-akili-gold/10 rounded-full blur-3xl"></div>
+          <div className="relative">
+            <h1 className="text-2xl font-bold text-white mb-1">
+              {isAuthenticated ? `Hey, ${user?.displayName?.split(' ')[0] || 'Player'}!` : 'Test Your Knowledge'}
+            </h1>
+            <p className="text-gray-400 text-sm mb-4">Master African trivia</p>
+
+            {/* Main Play Button */}
             <button
-              onClick={() => setDifficulty('easy')}
-              className={`py-2 px-3 rounded-lg font-medium text-sm transition-all ${
-                difficulty === 'easy'
-                  ? 'bg-green-500 text-white'
-                  : 'bg-white/10 text-gray-400 hover:bg-white/20'
-              }`}
+              onClick={() => navigate(`/categories?difficulty=${difficulty}${selectedCountry ? `&country=${selectedCountry}` : ''}`)}
+              className="w-full bg-gradient-to-r from-akili-gold to-yellow-500 text-black text-lg font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-akili-gold/30 hover:shadow-akili-gold/50 transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
-              🍠 Easy
-            </button>
-            <button
-              onClick={() => setDifficulty('medium')}
-              className={`py-2 px-3 rounded-lg font-medium text-sm transition-all ${
-                difficulty === 'medium'
-                  ? 'bg-yellow-500 text-black'
-                  : 'bg-white/10 text-gray-400 hover:bg-white/20'
-              }`}
-            >
-              🌽 Medium
-            </button>
-            <button
-              onClick={() => setDifficulty('hard')}
-              className={`py-2 px-3 rounded-lg font-medium text-sm transition-all ${
-                difficulty === 'hard'
-                  ? 'bg-red-500 text-white'
-                  : 'bg-white/10 text-gray-400 hover:bg-white/20'
-              }`}
-            >
-              🌶️ Hard
+              <span className="text-xl">▶</span> PLAY NOW
             </button>
           </div>
         </div>
 
-        {/* Play Buttons */}
-        <div className="space-y-3">
-          <button
-            onClick={() => navigate(`/categories?difficulty=${difficulty}${selectedCountry ? `&country=${selectedCountry}` : ''}`)}
-            className="w-full btn-gold text-xl py-4 flex items-center justify-center gap-2"
-          >
-            ▶ PLAY NOW {selectedCountry && `(${selectedCountry})`}
-          </button>
-          <button
-            onClick={() => navigate('/multiplayer')}
-            className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-lg rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-          >
-            ⚡💪🏾 BATTLE A FRIEND
-          </button>
+        {/* Daily Challenge Banner */}
+        <button
+          onClick={() => handlePlay(todayCategory)}
+          className="w-full p-4 rounded-xl bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 flex items-center gap-4 hover:border-purple-500/50 transition-all group"
+        >
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-2xl shadow-lg">
+            {todayIcon}
+          </div>
+          <div className="flex-1 text-left">
+            <p className="text-xs text-purple-300 uppercase tracking-wider">Daily Challenge</p>
+            <p className="text-white font-bold">{dayNames[today.getDay()]}: {todayCategoryName}</p>
+          </div>
+          <span className="text-purple-400 group-hover:translate-x-1 transition-transform">→</span>
+        </button>
+
+        {/* Battle Mode */}
+        <button
+          onClick={() => navigate('/multiplayer')}
+          className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-base rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shadow-lg"
+        >
+          ⚡ BATTLE A FRIEND
+        </button>
+
+        {/* Quick Settings Row */}
+        <div className="flex gap-2">
+          {/* Difficulty Pills */}
+          <div className="flex-1 flex gap-1 p-1 bg-white/5 rounded-xl">
+            {[
+              { id: 'easy', label: '🍃', color: 'bg-green-500' },
+              { id: 'medium', label: '⚡', color: 'bg-yellow-500' },
+              { id: 'hard', label: '🔥', color: 'bg-red-500' },
+            ].map((d) => (
+              <button
+                key={d.id}
+                onClick={() => setDifficulty(d.id)}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+                  difficulty === d.id
+                    ? `${d.color} text-black shadow-md`
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Country Selector - Swipeable Carousel */}
-        <div className="glass-card p-4">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-xs text-gray-400 uppercase tracking-wider">Play by Country</p>
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-gray-400">Choose Country</h3>
             {selectedCountry && (
-              <button
-                onClick={() => setSelectedCountry(null)}
-                className="text-xs text-akili-gold"
-              >
+              <button onClick={() => setSelectedCountry(null)} className="text-xs text-akili-gold">
                 Clear ✕
               </button>
             )}
           </div>
           <div
-            className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide"
+            className="flex gap-2 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
           >
             {[
               { id: 'Nigeria', flag: '🇳🇬', name: 'Nigeria', color: 'from-green-600 to-green-800' },
-              { id: 'Kenya', flag: '🇰🇪', name: 'Kenya', color: 'from-red-600 to-black' },
-              { id: 'South Africa', flag: '🇿🇦', name: 'S. Africa', color: 'from-green-500 to-yellow-500' },
+              { id: 'Kenya', flag: '🇰🇪', name: 'Kenya', color: 'from-red-600 to-red-800' },
+              { id: 'South Africa', flag: '🇿🇦', name: 'S. Africa', color: 'from-emerald-500 to-yellow-500' },
               { id: 'Ghana', flag: '🇬🇭', name: 'Ghana', color: 'from-red-500 to-yellow-500' },
-              { id: 'Ethiopia', flag: '🇪🇹', name: 'Ethiopia', color: 'from-green-500 to-red-500' },
+              { id: 'Ethiopia', flag: '🇪🇹', name: 'Ethiopia', color: 'from-green-600 to-yellow-500' },
               { id: 'Egypt', flag: '🇪🇬', name: 'Egypt', color: 'from-red-600 to-amber-600' },
-              { id: 'Tanzania', flag: '🇹🇿', name: 'Tanzania', color: 'from-blue-500 to-green-500' },
-              { id: 'Senegal', flag: '🇸🇳', name: 'Senegal', color: 'from-green-500 to-red-500' },
-              { id: 'DR Congo', flag: '🇨🇩', name: 'DRC', color: 'from-blue-600 to-yellow-500' },
-              { id: 'Uganda', flag: '🇺🇬', name: 'Uganda', color: 'from-black to-red-500' },
-              { id: 'Zimbabwe', flag: '🇿🇼', name: 'Zimbabwe', color: 'from-green-600 to-yellow-400' },
+              { id: 'Tanzania', flag: '🇹🇿', name: 'Tanzania', color: 'from-cyan-500 to-green-500' },
+              { id: 'Senegal', flag: '🇸🇳', name: 'Senegal', color: 'from-green-500 to-yellow-500' },
+              { id: 'DR Congo', flag: '🇨🇩', name: 'DRC', color: 'from-sky-500 to-yellow-500' },
+              { id: 'Uganda', flag: '🇺🇬', name: 'Uganda', color: 'from-red-500 to-yellow-500' },
+              { id: 'Zimbabwe', flag: '🇿🇼', name: 'Zimbabwe', color: 'from-green-500 to-yellow-400' },
               { id: 'Sudan', flag: '🇸🇩', name: 'Sudan', color: 'from-red-600 to-green-600' },
             ].map((country) => (
               <button
                 key={country.id}
                 onClick={() => setSelectedCountry(selectedCountry === country.id ? null : country.id)}
-                className={`flex-shrink-0 snap-start py-3 px-4 rounded-xl text-center transition-all min-w-[72px] ${
+                className={`flex-shrink-0 snap-start py-2.5 px-3 rounded-xl text-center transition-all min-w-[68px] ${
                   selectedCountry === country.id
-                    ? 'bg-akili-gold text-black scale-105 shadow-lg shadow-akili-gold/30'
+                    ? 'bg-akili-gold text-black scale-105 shadow-lg shadow-akili-gold/30 ring-2 ring-akili-gold'
                     : `bg-gradient-to-br ${country.color} text-white hover:scale-105 shadow-md`
                 }`}
               >
-                <span className="text-2xl block mb-1">{country.flag}</span>
-                <span className="text-xs font-medium">{country.name}</span>
+                <span className="text-xl block">{country.flag}</span>
+                <span className="text-[10px] font-medium">{country.name}</span>
               </button>
             ))}
           </div>
-          {selectedCountry && (
-            <p className="text-center text-akili-gold text-sm mt-2">
-              Playing: {selectedCountry} only
-            </p>
-          )}
         </div>
 
-        {/* Quick Categories - Swipeable Carousel */}
+        {/* Categories Grid */}
         <div>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">Quick Play</h3>
-            <button onClick={() => navigate('/categories')} className="text-akili-gold text-sm">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-gray-400">Categories</h3>
+            <button onClick={() => navigate('/categories')} className="text-akili-gold text-xs">
               See All →
             </button>
           </div>
-          <div
-            className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
-          >
+          <div className="grid grid-cols-4 gap-2">
             {[
               { id: 'history', icon: '📜', name: 'History', color: 'from-amber-500 to-orange-600' },
-              { id: 'entertainment', icon: '🎬', name: 'Entertainment', color: 'from-orange-500 to-red-600' },
-              { id: 'culture', icon: '🎭', name: 'Culture', color: 'from-yellow-500 to-amber-600' },
+              { id: 'entertainment', icon: '🎬', name: 'Movies', color: 'from-rose-500 to-red-600' },
               { id: 'music', icon: '🎵', name: 'Music', color: 'from-purple-500 to-pink-600' },
               { id: 'sports', icon: '⚽', name: 'Sports', color: 'from-blue-500 to-cyan-600' },
-              { id: 'geography', icon: '🗺️', name: 'Geography', color: 'from-green-500 to-emerald-600' },
+              { id: 'geography', icon: '🗺️', name: 'Places', color: 'from-green-500 to-emerald-600' },
+              { id: 'culture', icon: '🎭', name: 'Culture', color: 'from-yellow-500 to-amber-600' },
               { id: 'science', icon: '🔬', name: 'Science', color: 'from-cyan-500 to-blue-600' },
-              { id: 'politics', icon: '🏛️', name: 'Politics', color: 'from-pink-500 to-rose-600' },
+              { id: 'politics', icon: '🏛️', name: 'Politics', color: 'from-slate-500 to-slate-700' },
             ].map((category) => (
               <button
                 key={category.id}
                 onClick={() => handlePlay(category.id)}
-                className={`flex-shrink-0 snap-start p-4 rounded-xl text-center min-w-[90px] bg-gradient-to-br ${category.color} hover:scale-105 transition-transform shadow-lg`}
+                className={`p-3 rounded-xl text-center bg-gradient-to-br ${category.color} hover:scale-105 active:scale-95 transition-transform shadow-lg`}
               >
-                <span className="text-3xl block mb-1">{category.icon}</span>
-                <span className="text-white text-xs font-medium">{category.name}</span>
+                <span className="text-2xl block mb-0.5">{category.icon}</span>
+                <span className="text-white text-[10px] font-medium">{category.name}</span>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="glass-card p-4 text-center">
-            <p className="text-2xl">🔥</p>
+        {/* Stats Row */}
+        <div className="flex gap-3 p-3 bg-white/5 rounded-xl">
+          <div className="flex-1 text-center">
             <p className="text-lg font-bold text-white">{streak}</p>
-            <p className="text-xs text-gray-500">Streak</p>
+            <p className="text-[10px] text-gray-500 uppercase">Streak</p>
           </div>
-          <div className="glass-card p-4 text-center">
-            <p className="text-2xl">⭐</p>
-            <p className="text-lg font-bold text-white">{highScore}</p>
-            <p className="text-xs text-gray-500">Best Score</p>
+          <div className="w-px bg-white/10"></div>
+          <div className="flex-1 text-center">
+            <p className="text-lg font-bold text-akili-gold">{highScore}</p>
+            <p className="text-[10px] text-gray-500 uppercase">Best</p>
           </div>
-          <div className="glass-card p-4 text-center">
-            <p className="text-2xl">🏆</p>
+          <div className="w-px bg-white/10"></div>
+          <div className="flex-1 text-center">
             <p className="text-lg font-bold text-white">{xp}</p>
-            <p className="text-xs text-gray-500">Total XP</p>
+            <p className="text-[10px] text-gray-500 uppercase">XP</p>
           </div>
         </div>
 
-        {/* Quick Links */}
-        <div>
-          <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-3">More</h3>
-          <div className="grid grid-cols-2 gap-3">
-            <button onClick={() => navigate('/achievements')} className="glass-card p-4 text-white hover:border-akili-gold/50">
-              🏅 Achievements
+        {/* Bottom Nav */}
+        <div className="grid grid-cols-4 gap-2">
+          <button onClick={() => navigate('/achievements')} className="p-3 bg-white/5 rounded-xl text-center hover:bg-white/10 transition-colors">
+            <span className="text-xl block mb-1">🏅</span>
+            <span className="text-[10px] text-gray-400">Awards</span>
+          </button>
+          <button onClick={() => navigate('/league')} className="p-3 bg-white/5 rounded-xl text-center hover:bg-white/10 transition-colors">
+            <span className="text-xl block mb-1">👑</span>
+            <span className="text-[10px] text-gray-400">League</span>
+          </button>
+          <button onClick={() => navigate('/premium')} className="p-3 bg-white/5 rounded-xl text-center hover:bg-white/10 transition-colors">
+            <span className="text-xl block mb-1">💎</span>
+            <span className="text-[10px] text-gray-400">Premium</span>
+          </button>
+          {isAuthenticated ? (
+            <button onClick={handleLogout} className="p-3 bg-white/5 rounded-xl text-center hover:bg-red-500/20 transition-colors">
+              <span className="text-xl block mb-1">🚪</span>
+              <span className="text-[10px] text-gray-400">Logout</span>
             </button>
-            <button onClick={() => navigate('/league')} className="glass-card p-4 text-white hover:border-akili-gold/50">
-              👑 League
+          ) : (
+            <button onClick={() => navigate('/login')} className="p-3 bg-akili-gold/20 rounded-xl text-center hover:bg-akili-gold/30 transition-colors">
+              <span className="text-xl block mb-1">👤</span>
+              <span className="text-[10px] text-akili-gold">Sign In</span>
             </button>
-            <button onClick={() => navigate('/premium')} className="glass-card p-4 text-white hover:border-akili-gold/50">
-              💎 Premium
-            </button>
-            {isAuthenticated ? (
-              <button onClick={handleLogout} className="glass-card p-4 text-white hover:border-red-500/50">
-                🚪 Logout
-              </button>
-            ) : (
-              <button
-                onClick={() => navigate('/login')}
-                className="p-4 text-akili-gold font-bold rounded-xl hover:bg-akili-gold/20 transition-colors"
-                style={{
-                  border: '2px solid #FDB913',
-                  background: 'rgba(253, 185, 19, 0.1)'
-                }}
-              >
-                👤 Sign In
-              </button>
-            )}
-          </div>
+          )}
         </div>
       </main>
     </div>
