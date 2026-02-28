@@ -116,12 +116,13 @@ const GamePage = () => {
       selectedQuestions = getRandomQuestions(QUESTIONS_PER_GAME, difficulty, country)
     }
 
-    // Fallback if not enough questions
-    if (selectedQuestions.length < QUESTIONS_PER_GAME) {
+    // Fallback if not enough questions (only when NO country is selected)
+    // When a country IS selected, we strictly show only that country's questions
+    if (!country && selectedQuestions.length < QUESTIONS_PER_GAME) {
       const remaining = QUESTIONS_PER_GAME - selectedQuestions.length
       const existingIds = selectedQuestions.map(q => q.id)
 
-      // First try: same category without country filter
+      // First try: same category
       if (categoryId && categoryId !== 'random') {
         let moreQuestions = getRandomFromCategory(categoryId, remaining, difficulty, null)
           .filter(q => !existingIds.includes(q.id))
@@ -132,12 +133,8 @@ const GamePage = () => {
       if (selectedQuestions.length < QUESTIONS_PER_GAME) {
         const stillRemaining = QUESTIONS_PER_GAME - selectedQuestions.length
         const allIds = selectedQuestions.map(q => q.id)
-        let moreQuestions = getRandomQuestions(stillRemaining, difficulty, country)
+        let moreQuestions = getRandomQuestions(stillRemaining, difficulty, null)
           .filter(q => !allIds.includes(q.id))
-        if (moreQuestions.length < stillRemaining) {
-          moreQuestions = getRandomQuestions(stillRemaining, difficulty, null)
-            .filter(q => !allIds.includes(q.id))
-        }
         selectedQuestions = [...selectedQuestions, ...moreQuestions]
       }
     }
