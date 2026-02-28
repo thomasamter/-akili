@@ -3,6 +3,24 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import confetti from 'canvas-confetti'
+
+// Celebration effects
+const celebrateCorrect = () => {
+  // Gold and green confetti burst
+  confetti({
+    particleCount: 100,
+    spread: 70,
+    origin: { y: 0.6 },
+    colors: ['#FDB913', '#FFD700', '#10B981', '#ffffff'],
+  })
+}
+
+const shakeWrong = () => {
+  // Trigger screen shake via CSS class
+  document.body.classList.add('shake-wrong')
+  setTimeout(() => document.body.classList.remove('shake-wrong'), 500)
+}
 
 const QuestionCard = ({
   question,
@@ -32,6 +50,13 @@ const QuestionCard = ({
     setRevealed(true)
 
     const isCorrect = index === question.correctAnswer
+
+    // Trigger celebration or shake effect
+    if (isCorrect) {
+      celebrateCorrect()
+    } else {
+      shakeWrong()
+    }
 
     // Delay before calling onAnswer to show feedback
     setTimeout(() => {
