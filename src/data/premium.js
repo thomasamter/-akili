@@ -52,59 +52,111 @@ export const premiumFeatures = [
   },
 ]
 
-// African market pricing (accessible for average income levels)
-// Comparable to Netflix Mobile, Spotify, and popular mobile games in Africa
+// African market pricing - 30-40% below competitors (Trivia Crack, Trivia Star)
+// Competitors: Trivia Crack $4.99/month, $39.99/year | Trivia Star $3.99/week
 export const subscriptionPlans = [
   {
     id: 'weekly',
     name: 'Weekly',
-    price: 0.99,
+    price: 2.49,
     currency: 'USD',
     period: '7 days',
     savings: null,
     popular: false,
     localPrices: {
-      NGN: 800,    // Nigerian Naira
-      KES: 150,    // Kenyan Shilling
-      ZAR: 18,     // South African Rand
-      GHS: 12,     // Ghanaian Cedi
-      EGP: 30,     // Egyptian Pound
+      NGN: 2000,   // Nigerian Naira
+      KES: 400,    // Kenyan Shilling
+      ZAR: 45,     // South African Rand
+      GHS: 30,     // Ghanaian Cedi
+      EGP: 75,     // Egyptian Pound
     },
   },
   {
     id: 'monthly',
     name: 'Monthly',
-    price: 1.99,
+    price: 2.99,
     currency: 'USD',
     period: '30 days',
-    savings: '50% off weekly',
+    savings: '40% off weekly',
     popular: true,
     localPrices: {
-      NGN: 1500,   // Nigerian Naira
-      KES: 300,    // Kenyan Shilling
-      ZAR: 35,     // South African Rand
-      GHS: 25,     // Ghanaian Cedi
-      EGP: 60,     // Egyptian Pound
+      NGN: 2500,   // Nigerian Naira
+      KES: 500,    // Kenyan Shilling
+      ZAR: 55,     // South African Rand
+      GHS: 40,     // Ghanaian Cedi
+      EGP: 100,    // Egyptian Pound
     },
   },
   {
     id: 'yearly',
     name: 'Yearly',
-    price: 9.99,
+    price: 24.99,
     currency: 'USD',
     period: '365 days',
-    savings: '75% off',
+    savings: '35% off competitors',
     popular: false,
     bestValue: true,
     localPrices: {
-      NGN: 7500,   // Nigerian Naira (~$5 equivalent value)
-      KES: 1500,   // Kenyan Shilling
-      ZAR: 180,    // South African Rand
-      GHS: 120,    // Ghanaian Cedi
-      EGP: 300,    // Egyptian Pound
+      NGN: 19000,  // Nigerian Naira
+      KES: 4000,   // Kenyan Shilling
+      ZAR: 450,    // South African Rand
+      GHS: 300,    // Ghanaian Cedi
+      EGP: 750,    // Egyptian Pound
     },
   },
 ]
+
+// Supported payment methods for African markets
+export const paymentMethods = {
+  // Card payments (global)
+  cards: {
+    enabled: true,
+    providers: ['visa', 'mastercard', 'verve'],
+    processor: 'flutterwave', // or 'paystack'
+  },
+  // Mobile Money (pan-African)
+  mobileMoney: {
+    enabled: true,
+    providers: {
+      mpesa: { name: 'M-Pesa', countries: ['KE', 'TZ', 'GH'], icon: '📱' },
+      mtn: { name: 'MTN Mobile Money', countries: ['NG', 'GH', 'UG', 'RW', 'CM'], icon: '📲' },
+      airtel: { name: 'Airtel Money', countries: ['KE', 'UG', 'TZ', 'NG'], icon: '📱' },
+      orange: { name: 'Orange Money', countries: ['CI', 'SN', 'CM', 'ML'], icon: '📱' },
+      vodafone: { name: 'Vodafone Cash', countries: ['GH'], icon: '📱' },
+    },
+  },
+  // Bank transfers
+  bankTransfer: {
+    enabled: true,
+    countries: ['NG', 'ZA', 'KE', 'GH', 'EG'],
+  },
+  // USSD (for users without smartphones)
+  ussd: {
+    enabled: true,
+    countries: ['NG', 'KE', 'GH'],
+  },
+}
+
+// Payment processor configuration
+export const paymentConfig = {
+  // Primary: Flutterwave (pan-African, 34+ countries)
+  flutterwave: {
+    publicKey: process.env.VITE_FLUTTERWAVE_PUBLIC_KEY || '',
+    supportedCountries: ['NG', 'KE', 'ZA', 'GH', 'TZ', 'UG', 'RW', 'EG', 'CI', 'SN'],
+    features: ['cards', 'mobile_money', 'bank_transfer', 'ussd'],
+  },
+  // Secondary: Paystack (strong in West Africa)
+  paystack: {
+    publicKey: process.env.VITE_PAYSTACK_PUBLIC_KEY || '',
+    supportedCountries: ['NG', 'GH', 'ZA', 'KE'],
+    features: ['cards', 'bank_transfer', 'ussd'],
+  },
+  // App stores for in-app purchases
+  appStores: {
+    ios: { enabled: true, processor: 'apple_iap' },
+    android: { enabled: true, processor: 'google_play' },
+  },
+}
 
 // Currency symbols for display
 export const currencySymbols = {

@@ -18851,9 +18851,26 @@ export const getQuestionsByDifficulty = (difficulty) => {
   return questions.filter(q => q.difficulty === difficulty)
 }
 
-// Configuration for question rotation
-const RECENTLY_USED_LIMIT = 600 // Track last 600 questions (~60 games worth)
+// Configuration for question rotation - improved to minimize repeats
+const RECENTLY_USED_LIMIT = 1000 // Track last 1000 questions (~100 games worth)
+const STRICT_COOLDOWN = 50 // Never repeat questions within last 50 (5 games)
+const SOFT_COOLDOWN = 200 // Avoid questions within last 200 unless necessary
 const RECENTLYUSED_KEY = 'akili_recently_used_questions'
+
+// Helper: Get recency score (lower = more recent = less desirable)
+const getRecencyScore = (questionId, recentlyUsed) => {
+  const idx = recentlyUsed.indexOf(questionId)
+  if (idx === -1) return 1000 // Never seen = highest priority
+  return idx // Higher index = older = more desirable
+}
+
+// Helper: Weighted shuffle - questions with higher scores more likely to be picked first
+const weightedShuffle = (questions, recentlyUsed) => {
+  return questions
+    .map(q => ({ q, score: getRecencyScore(q.id, recentlyUsed) + Math.random() * 100 }))
+    .sort((a, b) => b.score - a.score) // Higher score first
+    .map(item => item.q)
+}
 
 // Get random questions with optional difficulty and country filter, avoiding recently used
 export const getRandomQuestions = (count = 10, difficulty = null, country = null) => {
@@ -18886,30 +18903,38 @@ export const getRandomQuestions = (count = 10, difficulty = null, country = null
     }
   }
 
-  // Split into never-seen, old (seen but not recent), and recent questions
-  const neverSeen = filtered.filter(q => !recentlyUsed.includes(q.id))
-  const oldQuestions = filtered.filter(q => {
-    const idx = recentlyUsed.indexOf(q.id)
-    return idx > RECENTLY_USED_LIMIT / 2 // Only use if in older half of history
-  })
+  // Strict cooldown: never repeat within last STRICT_COOLDOWN questions
+  const strictRecent = new Set(recentlyUsed.slice(0, STRICT_COOLDOWN))
+  const notInStrictCooldown = filtered.filter(q => !strictRecent.has(q.id))
 
-  // Prioritize never-seen questions, then old questions
-  let availableQuestions = neverSeen.length >= count ? neverSeen :
-                           [...neverSeen, ...oldQuestions]
+  // Soft cooldown: prefer questions not in last SOFT_COOLDOWN
+  const softRecent = new Set(recentlyUsed.slice(0, SOFT_COOLDOWN))
+  const notInSoftCooldown = notInStrictCooldown.filter(q => !softRecent.has(q.id))
 
-  // If still not enough, use all filtered questions
-  if (availableQuestions.length < count) {
-    availableQuestions = filtered
+  // Never seen questions
+  const recentlyUsedSet = new Set(recentlyUsed)
+  const neverSeen = filtered.filter(q => !recentlyUsedSet.has(q.id))
+
+  // Build available pool with priority layers
+  let availableQuestions
+  if (neverSeen.length >= count) {
+    // Best case: enough never-seen questions
+    availableQuestions = weightedShuffle(neverSeen, recentlyUsed)
+  } else if (notInSoftCooldown.length >= count) {
+    // Good: enough questions outside soft cooldown
+    availableQuestions = weightedShuffle(notInSoftCooldown, recentlyUsed)
+  } else if (notInStrictCooldown.length >= count) {
+    // OK: use questions outside strict cooldown, weighted by recency
+    availableQuestions = weightedShuffle(notInStrictCooldown, recentlyUsed)
+  } else if (notInStrictCooldown.length > 0) {
+    // Limited pool: use what we have outside strict cooldown
+    availableQuestions = weightedShuffle(notInStrictCooldown, recentlyUsed)
+  } else {
+    // Last resort: use all filtered (very small question pool for this filter combo)
+    availableQuestions = weightedShuffle(filtered, recentlyUsed)
   }
 
-  // Fisher-Yates shuffle for better randomization
-  const shuffled = [...availableQuestions]
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
-  }
-
-  const selectedQuestions = shuffled.slice(0, count)
+  const selectedQuestions = availableQuestions.slice(0, count)
 
   // Update recently used - store up to RECENTLY_USED_LIMIT question IDs
   const selectedIds = selectedQuestions.map(q => q.id)
@@ -18955,31 +18980,38 @@ export const getRandomFromCategory = (categoryId, count = 10, difficulty = null,
     }
   }
 
-  // Split into never-seen, old (seen but not recent), and recent questions
-  const neverSeen = categoryQuestions.filter(q => !recentlyUsed.includes(q.id))
-  const oldQuestions = categoryQuestions.filter(q => {
-    const idx = recentlyUsed.indexOf(q.id)
-    return idx > RECENTLY_USED_LIMIT / 2 // Only use if in older half of history
-  })
+  // Strict cooldown: never repeat within last STRICT_COOLDOWN questions
+  const strictRecent = new Set(recentlyUsed.slice(0, STRICT_COOLDOWN))
+  const notInStrictCooldown = categoryQuestions.filter(q => !strictRecent.has(q.id))
 
-  // Prioritize never-seen questions, then old questions
-  let availableQuestions = neverSeen.length >= count ? neverSeen :
-                           [...neverSeen, ...oldQuestions]
+  // Soft cooldown: prefer questions not in last SOFT_COOLDOWN
+  const softRecent = new Set(recentlyUsed.slice(0, SOFT_COOLDOWN))
+  const notInSoftCooldown = notInStrictCooldown.filter(q => !softRecent.has(q.id))
 
-  // If still not enough, use all category questions
-  if (availableQuestions.length < count) {
-    availableQuestions = categoryQuestions
+  // Never seen questions
+  const recentlyUsedSet = new Set(recentlyUsed)
+  const neverSeen = categoryQuestions.filter(q => !recentlyUsedSet.has(q.id))
+
+  // Build available pool with priority layers
+  let availableQuestions
+  if (neverSeen.length >= count) {
+    // Best case: enough never-seen questions
+    availableQuestions = weightedShuffle(neverSeen, recentlyUsed)
+  } else if (notInSoftCooldown.length >= count) {
+    // Good: enough questions outside soft cooldown
+    availableQuestions = weightedShuffle(notInSoftCooldown, recentlyUsed)
+  } else if (notInStrictCooldown.length >= count) {
+    // OK: use questions outside strict cooldown, weighted by recency
+    availableQuestions = weightedShuffle(notInStrictCooldown, recentlyUsed)
+  } else if (notInStrictCooldown.length > 0) {
+    // Limited pool: use what we have outside strict cooldown
+    availableQuestions = weightedShuffle(notInStrictCooldown, recentlyUsed)
+  } else {
+    // Last resort: use all category questions (very small question pool)
+    availableQuestions = weightedShuffle(categoryQuestions, recentlyUsed)
   }
 
-  // Fisher-Yates shuffle
-  const shuffled = [...availableQuestions]
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
-  }
-
-  // Get the questions
-  const selectedQuestions = shuffled.slice(0, count)
+  const selectedQuestions = availableQuestions.slice(0, count)
 
   // Update recently used - store up to RECENTLY_USED_LIMIT question IDs
   const selectedIds = selectedQuestions.map(q => q.id)
@@ -18991,6 +19023,15 @@ export const getRandomFromCategory = (categoryId, count = 10, difficulty = null,
   }
 
   return selectedQuestions
+}
+
+// Helper: Clear question history (useful for testing or user reset)
+export const clearQuestionHistory = () => {
+  try {
+    localStorage.removeItem(RECENTLYUSED_KEY)
+  } catch (e) {
+    // Ignore errors
+  }
 }
 
 export default questions

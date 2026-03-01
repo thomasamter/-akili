@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Check, Crown, Zap, Heart, Shield, Gift, Star } from 'lucide-react'
-import { premiumFeatures, subscriptionPlans, currencySymbols } from '../data/premium'
+import { premiumFeatures, subscriptionPlans, currencySymbols, paymentMethods } from '../data/premium'
 import { usePlayerStore } from '../lib/store'
 
 const PremiumPage = () => {
@@ -145,11 +145,22 @@ const PremiumPage = () => {
               </select>
             </div>
 
-            {/* Affordable pricing note */}
+            {/* Competitive pricing note */}
             <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-xl">
               <p className="text-green-400 text-sm text-center">
-                💚 Affordable pricing for Africa - Less than the cost of a coffee!
+                💚 35% cheaper than competitors - Best value for African gamers!
               </p>
+            </div>
+
+            {/* Payment Methods */}
+            <div className="mb-4 p-3 bg-white/5 rounded-xl">
+              <p className="text-white/60 text-xs text-center mb-2">Pay with</p>
+              <div className="flex items-center justify-center gap-4 flex-wrap">
+                <span className="text-xs text-white/80">💳 Cards</span>
+                <span className="text-xs text-white/80">📱 M-Pesa</span>
+                <span className="text-xs text-white/80">📲 MTN MoMo</span>
+                <span className="text-xs text-white/80">🏦 Bank</span>
+              </div>
             </div>
 
             <div className="space-y-3">
